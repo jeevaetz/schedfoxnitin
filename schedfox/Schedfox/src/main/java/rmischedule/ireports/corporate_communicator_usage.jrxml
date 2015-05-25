@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="corporate_communicator_usage" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="startDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2013-01-01"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="endDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2013-01-31"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="schema" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+(CASE WHEN branch.branch_name IS NULL THEN 'No Corporate Communicators!' ELSE branch.branch_name END) as branch_name,
+"user".*,
+SUM((CASE WHEN problemsolver.ps_id IS NULL THEN 0 ELSE 1 END)) as count
+FROM
+control_db.user
+INNER JOIN control_db.company ON control_db.company.company_db = $P{schema} AND company.company_management_id = "user".user_management_id
+LEFT JOIN $P!{schema}.problemsolver ON "user".user_id = problemsolver.user_id AND DATE(ps_date) BETWEEN DATE($P{startDate}) AND DATE($P{endDate})
+INNER JOIN control_db.user_groups ON user_groups.user_id = "user".user_id AND user_groups.groups_id IN (11, 16)
+LEFT JOIN $P!{schema}.client ON client.client_id = problemsolver.client_id
+LEFT JOIN control_db.branch ON branch.branch_id = client.branch_id
+WHERE user_is_deleted != 1
+GROUP BY "user".user_id, branch.branch_name
+ORDER BY branch.branch_name]]>
+	</queryString>
+	<field name="branch_name" class="java.lang.String"/>
+	<field name="user_id" class="java.lang.Integer"/>
+	<field name="user_md5" class="java.lang.String"/>
+	<field name="user_login" class="java.lang.String"/>
+	<field name="user_password" class="java.lang.String"/>
+	<field name="user_first_name" class="java.lang.String"/>
+	<field name="user_last_name" class="java.lang.String"/>
+	<field name="user_middle_initial" class="java.lang.String"/>
+	<field name="user_is_deleted" class="java.lang.Integer"/>
+	<field name="user_management_id" class="java.lang.Integer"/>
+	<field name="user_email" class="java.lang.String"/>
+	<field name="count" class="java.lang.Long"/>
+	<variable name="branch_total" class="java.lang.Long" resetType="Group" resetGroup="branch" calculation="Sum">
+		<variableExpression><![CDATA[$F{count}]]></variableExpression>
+	</variable>
+	<group name="branch">
+		<groupExpression><![CDATA[$F{branch_name}]]></groupExpression>
+		<groupHeader>
+			<band height="55">
+				<staticText>
+					<reportElement x="49" y="35" width="139" height="20"/>
+					<textElement>
+						<font size="14" isBold="true"/>
+					</textElement>
+					<text><![CDATA[First Name]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="188" y="35" width="141" height="20"/>
+					<textElement>
+						<font size="14" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Last Name]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="329" y="35" width="141" height="20"/>
+					<textElement>
+						<font size="14" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Number of CC's]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="0" y="0" width="329" height="35"/>
+					<textElement>
+						<font size="24"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{branch_name}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="24">
+				<textField>
+					<reportElement x="329" y="0" width="141" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$V{branch_total}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="79" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="802" height="48"/>
+				<textElement>
+					<font size="22"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Corporate Communicator Summary Report for " + $P{startDate} + " to " + $P{endDate}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<textField>
+				<reportElement x="49" y="0" width="139" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{user_first_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="188" y="0" width="141" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{user_last_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="329" y="0" width="141" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{count}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

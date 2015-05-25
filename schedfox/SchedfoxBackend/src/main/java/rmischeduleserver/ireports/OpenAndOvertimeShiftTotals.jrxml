@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OpenAndOvertimeShiftTotals" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="42"/>
+	<property name="ireport.y" value="0"/>
+	<style name="open">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{open_shifts}.doubleValue() > 0.1]]></conditionExpression>
+			<style forecolor="#999900"/>
+		</conditionalStyle>
+	</style>
+	<style name="overtime">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{over}.doubleValue() > 0.1]]></conditionExpression>
+			<style forecolor="#999900"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="start_week" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2012-02-04"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="end_week" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2012-02-10"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="title" class="java.lang.String">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="branch_id" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+	branch.branch_name,
+	data.week,
+	SUM(time_worked) as total,
+	SUM(CASE WHEN time_worked > 40.0 AND eid != 0 AND employee.is_sub_contractor != true THEN time_worked - 40 ELSE 0 END) as over,
+	SUM(CASE WHEN time_worked > 40.0 AND eid != 0 AND employee.is_sub_contractor != true THEN 40.0 ELSE time_worked END) as reg,
+	SUM(training_worked) as training_worked,
+	SUM(CASE WHEN time_worked > 40.0 AND eid = 0 THEN time_worked - 40 ELSE 0 END) as open_shifts,
+	data.branch_id
+	FROM
+	(
+		SELECT
+		SUM (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) as time_worked, branch_id,
+		DATE(DATE_TRUNC('week', data.date)) as week,
+		SUM(CASE WHEN is_type(data.type::text, '300'::text)
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as training_worked,
+		SUM(CASE WHEN eid = 0
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as open_shifts,
+		eid
+		FROM
+		assemble_schedule(DATE($P{start_week}), DATE($P{end_week}), -1) as data
+		GROUP BY date_trunc('week', data.date), eid, branch_id
+	) as data
+LEFT JOIN employee ON employee.employee_id = data.eid
+LEFT JOIN control_db.branch ON branch.branch_id = data.branch_id
+GROUP BY data.branch_id, branch.branch_name, data.week
+ORDER BY branch_name, data.week]]>
+	</queryString>
+	<field name="branch_name" class="java.lang.String"/>
+	<field name="week" class="java.sql.Date"/>
+	<field name="total" class="java.math.BigDecimal"/>
+	<field name="over" class="java.math.BigDecimal"/>
+	<field name="reg" class="java.math.BigDecimal"/>
+	<field name="training_worked" class="java.math.BigDecimal"/>
+	<field name="open_shifts" class="java.math.BigDecimal"/>
+	<field name="branch_id" class="java.lang.Integer"/>
+	<group name="branch_group">
+		<groupExpression><![CDATA[$F{branch_name}]]></groupExpression>
+		<groupHeader>
+			<band height="42">
+				<textField>
+					<reportElement x="0" y="0" width="555" height="22"/>
+					<textElement>
+						<font size="14"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{branch_name}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="15" y="22" width="121" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<text><![CDATA[Week Starting]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="362" y="22" width="37" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<text><![CDATA[Training]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="136" y="22" width="36" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<text><![CDATA[Open]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="467" y="22" width="41" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<text><![CDATA[Total]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="399" y="22" width="31" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<text><![CDATA[(HRS /]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="430" y="22" width="37" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<text><![CDATA[%)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="172" y="22" width="33" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<text><![CDATA[(HRS /]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="205" y="22" width="35" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<text><![CDATA[%)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="508" y="22" width="31" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<text><![CDATA[(HRS /]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="240" y="22" width="51" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<text><![CDATA[Over Time]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="291" y="22" width="31" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<text><![CDATA[(HRS /]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="322" y="22" width="40" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<text><![CDATA[%)]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="21"/>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="27" splitType="Stretch">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-1" x="0" y="0" width="555" height="27"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="16" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Branch Hourly Information"]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="35" splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<textField pattern="EEEEE dd MMMMM yyyy">
+				<reportElement x="15" y="0" width="121" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{week}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement style="overtime" x="240" y="0" width="63" height="20"/>
+				<textElement textAlignment="Left">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{over}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00 %">
+				<reportElement x="303" y="0" width="59" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal($F{over}.doubleValue() / $F{total}.doubleValue())]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="362" y="0" width="51" height="20"/>
+				<textElement textAlignment="Left">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{training_worked}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00 %">
+				<reportElement x="413" y="0" width="54" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal($F{training_worked}.doubleValue() / $F{total}.doubleValue())]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement style="open" x="136" y="0" width="55" height="20"/>
+				<textElement textAlignment="Left">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{open_shifts}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00 %">
+				<reportElement x="191" y="0" width="49" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal($F{open_shifts}.doubleValue() / $F{total}.doubleValue())]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="467" y="0" width="72" height="20"/>
+				<textElement textAlignment="Left">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{total}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

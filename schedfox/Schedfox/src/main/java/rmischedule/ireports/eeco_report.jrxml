@@ -1,0 +1,733 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="eeco_report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="schema" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="branchId" class="java.lang.String"/>
+	<parameter name="branch_name" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT
+(CASE WHEN dynamic_field_value IS NULL OR dynamic_field_value = 'Select a value' THEN 'Service Workers' ELSE dynamic_field_value END) as dynamic_field_value,
+SUM(CASE WHEN gender = 1 AND race = 5 THEN 1 ELSE 0 END) as mhisp,
+SUM(CASE WHEN gender = 2 AND race = 5 THEN 1 ELSE 0 END) as fhisp,
+SUM(CASE WHEN gender = 1 AND race = 1 THEN 1 ELSE 0 END) as mblack,
+SUM(CASE WHEN gender = 2 AND race = 1 THEN 1 ELSE 0 END) as fblack,
+SUM(CASE WHEN gender = 1 AND race = 4 THEN 1 ELSE 0 END) as mwhite,
+SUM(CASE WHEN gender = 2 AND race = 4 THEN 1 ELSE 0 END) as fwhite,
+SUM(CASE WHEN gender = 1 AND race = 3 THEN 1 ELSE 0 END) as masian,
+SUM(CASE WHEN gender = 2 AND race = 3 THEN 1 ELSE 0 END) as fasian,
+SUM(CASE WHEN gender = 1 AND race = 2 THEN 1 ELSE 0 END) as mnat,
+SUM(CASE WHEN gender = 2 AND race = 2 THEN 1 ELSE 0 END) as fnat,
+SUM(CASE WHEN gender = 1 AND race = 6 THEN 1 ELSE 0 END) as mpacf,
+SUM(CASE WHEN gender = 2 AND race = 6 THEN 1 ELSE 0 END) as fpacf,
+SUM(CASE WHEN gender IS NULL OR race = 7 OR gender IS NULL THEN 1 ELSE 0 END) as other
+FROM
+$P!{schema}.employee
+LEFT JOIN $P!{schema}.dynamic_field_value ON dynamic_field_value.key_for_value = employee.employee_id AND
+	dynamic_field_value.dynamic_field_def_id = (SELECT dynamic_field_def_id FROM
+	$P!{schema}.dynamic_field_def WHERE dynamic_field_def_name = 'Position' LIMIT 1)
+LEFT JOIN control_db.branch ON branch.branch_id = employee.branch_id
+WHERE employee_is_deleted != 1 AND branch_name != 'Test Data' AND (employee.branch_id = $P!{branchId} OR $P!{branchId} = -1)
+GROUP BY (CASE WHEN dynamic_field_value IS NULL OR dynamic_field_value = 'Select a value' THEN 'Service Workers' ELSE dynamic_field_value END)
+ORDER BY dynamic_field_value]]>
+	</queryString>
+	<field name="dynamic_field_value" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="mhisp" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="fhisp" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="mblack" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="fblack" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="mwhite" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="fwhite" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="masian" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="fasian" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="mnat" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="fnat" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="mpacf" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="fpacf" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="other" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<variable name="mhisp_tot" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{mhisp}]]></variableExpression>
+	</variable>
+	<variable name="fhisp_tot" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{fhisp}]]></variableExpression>
+	</variable>
+	<variable name="mblack_tot" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{mblack}]]></variableExpression>
+	</variable>
+	<variable name="fblack_tot" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{fblack}]]></variableExpression>
+	</variable>
+	<variable name="mwhite_tot" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{mwhite}]]></variableExpression>
+	</variable>
+	<variable name="fwhite_tot" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{fwhite}]]></variableExpression>
+	</variable>
+	<variable name="masian_tot" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{masian}]]></variableExpression>
+	</variable>
+	<variable name="fasian_tot" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{fasian}]]></variableExpression>
+	</variable>
+	<variable name="mnat_tot" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{masian}]]></variableExpression>
+	</variable>
+	<variable name="fnat_tot" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{fasian}]]></variableExpression>
+	</variable>
+	<variable name="mpacf_tot" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{mpacf}]]></variableExpression>
+	</variable>
+	<variable name="fpacf_tot" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{fpacf}]]></variableExpression>
+	</variable>
+	<variable name="tot" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[new Long($F{mhisp}.longValue() +
+$F{fhisp}.longValue() +
+$F{mblack}.longValue() +
+$F{fblack}.longValue() +
+$F{mwhite}.longValue() +
+$F{fwhite}.longValue() +
+$F{masian}.longValue() +
+$F{fasian}.longValue() +
+$F{mnat}.longValue() +
+$F{fnat}.longValue() +
+$F{mpacf}.longValue() +
+$F{fpacf}.longValue() +
+$F{other}.longValue())]]></variableExpression>
+	</variable>
+	<variable name="tot_other" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{other}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="50" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="379" height="39"/>
+				<textElement>
+					<font size="24"/>
+				</textElement>
+				<text><![CDATA[Demographics Report]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="379" y="0" width="418" height="39"/>
+				<textElement>
+					<font size="24"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{branch_name}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="60" splitType="Stretch">
+			<staticText>
+				<reportElement mode="Opaque" x="81" y="0" width="53" height="60" backcolor="#C2D7E2"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Hispanic Male]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="134" y="0" width="53" height="60" backcolor="#C2D7E2"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Hispanic Female]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="187" y="0" width="500" height="20" backcolor="#ABDDAA"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Non-Hispanic]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="187" y="20" width="250" height="20" backcolor="#AEBCF2"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Male]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="437" y="20" width="250" height="20" backcolor="#AEBCF2"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Female]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="187" y="40" width="50" height="20" backcolor="#C2D7E2"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Black]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="237" y="40" width="50" height="20" backcolor="#C2D7E2"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[White]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="287" y="40" width="50" height="20" backcolor="#C2D7E2"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Asian]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="337" y="40" width="50" height="20" backcolor="#C2D7E2"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nat Amer]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="387" y="40" width="50" height="20" backcolor="#C2D7E2"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Pacf Isle]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="487" y="40" width="50" height="20" backcolor="#C2D7E2"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[White]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="437" y="40" width="50" height="20" backcolor="#C2D7E2"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Black]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="587" y="40" width="50" height="20" backcolor="#C2D7E2"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nat Amer]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="537" y="40" width="50" height="20" backcolor="#C2D7E2"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Asian]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="637" y="40" width="50" height="20" backcolor="#C2D7E2"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Pacf Isle]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="742" y="0" width="55" height="60"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Totals]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="687" y="0" width="55" height="60"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Other / Non Assigned]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="21" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="81" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{dynamic_field_value}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="81" y="0" width="53" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{mhisp}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="187" y="0" width="50" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{mblack}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="237" y="0" width="50" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{mwhite}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="287" y="0" width="50" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{masian}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="337" y="0" width="50" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{mnat}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="387" y="0" width="50" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{mpacf}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="437" y="0" width="50" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{fblack}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="487" y="0" width="50" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{fwhite}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="537" y="0" width="50" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{fasian}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="587" y="0" width="50" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{fnat}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="637" y="0" width="50" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{fpacf}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="134" y="0" width="53" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{fhisp}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="742" y="0" width="55" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[new Long($F{mhisp}.longValue() +
+$F{fhisp}.longValue() +
+$F{mblack}.longValue() +
+$F{fblack}.longValue() +
+$F{mwhite}.longValue() +
+$F{fwhite}.longValue() +
+$F{masian}.longValue() +
+$F{fasian}.longValue() +
+$F{mnat}.longValue() +
+$F{fnat}.longValue() +
+$F{mpacf}.longValue() +
+$F{fpacf}.longValue() +
+$F{other}.longValue())]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="687" y="0" width="55" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{other}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="42" splitType="Stretch">
+			<textField>
+				<reportElement x="81" y="0" width="53" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{mhisp_tot}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="134" y="0" width="53" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{fhisp_tot}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="187" y="0" width="50" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{mblack_tot}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="237" y="0" width="50" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{mwhite_tot}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="287" y="0" width="50" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{masian_tot}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="337" y="0" width="50" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{mnat_tot}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="387" y="0" width="50" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{mpacf_tot}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="437" y="0" width="50" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{fblack_tot}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="487" y="0" width="50" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{fwhite_tot}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="537" y="0" width="50" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{fasian_tot}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="587" y="0" width="50" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{fnat_tot}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="637" y="0" width="50" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{fpacf_tot}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="742" y="0" width="55" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{tot}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="687" y="0" width="55" height="20"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{tot_other}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band height="22" splitType="Stretch">
+			<textField pattern="EEEEE dd MMMMM yyyy">
+				<reportElement x="0" y="2" width="210" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

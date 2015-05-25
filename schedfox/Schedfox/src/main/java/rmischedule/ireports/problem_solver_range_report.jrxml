@@ -1,0 +1,456 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="problem_solver_range_report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="style1" isDefault="false" forecolor="#000000">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[new Boolean($F{count}.intValue() == 0)]]></conditionExpression>
+			<style isDefault="false" style="style1" forecolor="#990033"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="schema" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="startDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2014-06-01"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="endDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2014-10-30"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+(CASE WHEN parent.client_id IS NULL THEN parent.client_name || ' - ' || client.client_name ELSE client.client_name END) as full_client_name,
+(
+	SELECT COUNT(*)
+	FROM $P!{schema}.problemsolver
+	WHERE
+	problemsolver.client_id = client.client_id AND problemsolver.user_id = "user".user_id AND
+	DATE(ps_date) BETWEEN DATE($P{startDate}) AND DATE($P{endDate})
+) as count,
+(
+	SELECT COUNT(*)
+	FROM $P!{schema}.client_to_user_contact
+	INNER JOIN $P!{schema}.client ON client.client_id = client_to_user_contact.client_id
+	WHERE
+	client_to_user_contact.user_id = mydata.user_id AND client.client_is_deleted != 1 AND client.client_start_date < DATE($P{startDate})
+) as clicount,
+(CASE WHEN none_selected > 0 THEN none_selected || ' None Selected,' ELSE '' END) ||
+(CASE WHEN multi_selected > 0 THEN multi_selected || ' Multiple Selected,' ELSE '' END) ||
+(CASE WHEN courtesy > 0 THEN courtesy || ' Courtesy Selected,' ELSE '' END) ||
+(CASE WHEN service > 0 THEN service || ' Service Selected,' ELSE '' END) ||
+(CASE WHEN site > 0 THEN site || ' Site Selected,' ELSE '' END) ||
+(CASE WHEN client_request > 0 THEN client_request || ' Client Request Selected,' ELSE '' END) ||
+(CASE WHEN followup > 0 THEN followup || ' FollowUp Selected,' ELSE '' END) ||
+(CASE WHEN other > 0 THEN other || ' Other Selected,' ELSE '' END) ||
+(CASE WHEN cancelled > 0 THEN cancelled || ' Cancelled Selected,' ELSE '' END) as type_text,
+*
+FROM
+$P!{schema}.client
+LEFT JOIN $P!{schema}.client as parent ON parent.client_id = client.client_worksite
+INNER JOIN $P!{schema}.client_to_user_contact ON client_to_user_contact.client_id = client.client_id
+INNER JOIN control_db.user ON "user".user_id = client_to_user_contact.user_id
+INNER JOIN control_db.branch ON branch.branch_id = client.branch_id
+INNER JOIN
+(
+	SELECT cid FROM $P!{schema}.assemble_schedule(DATE($P{startDate}), DATE($P{endDate}), -1, -1) GROUP BY cid
+) as sched_data ON sched_data.cid = client.client_id
+LEFT JOIN
+(
+SELECT user_id, client_id,
+SUM(none_selected) as none_selected,
+SUM(multi_selected) as multi_selected,
+SUM(courtesy) as courtesy,
+SUM(service) as service,
+SUM(site) as site,
+SUM(client_request) as client_request,
+SUM(followup) as followup,
+SUM(other) as other,
+SUM(cancelled) as cancelled
+FROM
+(
+	SELECT
+	problemsolver.ps_id,
+	user_id,
+	problemsolver.client_id,
+	(CASE WHEN EXISTS (
+			SELECT client_to_user_contact.user_id FROM
+			$P!{schema}.client_to_user_contact
+			INNER JOIN $P!{schema}.client as iclient ON iclient.client_id = client_to_user_contact.client_id
+			INNER JOIN $P!{schema}.client_billing ON client_billing.client_id = iclient.client_id
+			WHERE
+			client_to_user_contact.user_id = problemsolver.user_id AND iclient.client_is_deleted != 1
+			AND (client_to_user_contact.user_id != 109))
+	THEN client.branch_id ELSE -1 END) branch_id,
+	(CASE WHEN MAX(problemsolver_to_types.ps_id) IS NULL THEN 1 ELSE 0 END) as none_selected,
+	(CASE WHEN COUNT(*) > 1 THEN 1 ELSE 0 END) as multi_selected,
+	(CASE WHEN COUNT(*) = 1 AND MAX(problemsolver_to_types.problemsolver_type_id) = 1 THEN 1 ELSE 0 END) as courtesy,
+	(CASE WHEN COUNT(*) = 1 AND MAX(problemsolver_to_types.problemsolver_type_id) = 2 THEN 1 ELSE 0 END) as service,
+	(CASE WHEN COUNT(*) = 1 AND MAX(problemsolver_to_types.problemsolver_type_id) = 3 THEN 1 ELSE 0 END) as site,
+	(CASE WHEN COUNT(*) = 1 AND MAX(problemsolver_to_types.problemsolver_type_id) = 4 THEN 1 ELSE 0 END) as client_request,
+	(CASE WHEN COUNT(*) = 1 AND MAX(problemsolver_to_types.problemsolver_type_id) = 5 THEN 1 ELSE 0 END) as followup,
+	(CASE WHEN COUNT(*) = 1 AND MAX(problemsolver_to_types.problemsolver_type_id) = 6 THEN 1 ELSE 0 END) as other,
+	(CASE WHEN COUNT(*) = 1 AND MAX(problemsolver_to_types.problemsolver_type_id) = 7 THEN 1 ELSE 0 END) as cancelled
+	FROM
+	$P!{schema}.problemsolver
+	LEFT JOIN $P!{schema}.client ON client.client_id = problemsolver.client_id
+	LEFT JOIN $P!{schema}.problemsolver_to_types ON problemsolver_to_types.ps_id = problemsolver.ps_id
+	WHERE
+	DATE(ps_date) BETWEEN DATE($P{startDate}) AND DATE($P{endDate})
+	GROUP BY problemsolver.ps_id, user_id, problemsolver.client_id, client.branch_id
+) as innerdata
+GROUP BY client_id, user_id
+) as mydata ON mydata.client_id = client.client_id AND mydata.user_id = client_to_user_contact.user_id
+LEFT JOIN $P!{schema}.client_billing ON client_billing.client_id = client.client_id
+WHERE
+client.client_is_deleted != 1
+ORDER BY branch_name, user_first_name, user_last_name, client.client_name]]>
+	</queryString>
+	<field name="full_client_name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="count" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="clicount" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="type_text" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="branch_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_phone" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_phone2" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_fax" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_address" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_address2" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_city" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_state" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_zip" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="management_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_start_date" class="java.sql.Date">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_end_date" class="java.sql.Date">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_is_deleted" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_type" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_last_updated" class="java.sql.Timestamp">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_worksite" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_training_time" class="java.lang.Double">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_bill_for_training" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_worksite_order" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="rate_code_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_break" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="store_volume_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="store_remote_market_id" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="url" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="cusername" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="cpassword" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="default_non_billable" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="check_out_option_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="default_contract_renewal" class="org.postgresql.util.PGInterval">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="checkin_from_post_phone" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="contact_for_renewal" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="created_on" class="java.sql.Timestamp">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="report_time" class="java.sql.Time">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="notify_dm_late_checkout_minutes" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="log_into_route" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_to_user_contact_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="user_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="user_md5" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="user_login" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="user_password" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="user_first_name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="user_last_name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="user_middle_initial" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="user_is_deleted" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="user_management_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="user_email" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="email_password" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="can_view_ssn" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="branch_name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="branch_management_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="timezone" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="cid" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="none_selected" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="multi_selected" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="courtesy" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="service" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="site" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_request" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="followup" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="other" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="cancelled" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_billing_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_is_billable" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_bill_frequency_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="sales_tax_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="bill_overtime" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<variable name="total_count" class="java.lang.Long" resetType="Group" resetGroup="employee_name" calculation="Sum">
+		<variableExpression><![CDATA[$F{count}]]></variableExpression>
+	</variable>
+	<variable name="client_count" class="java.lang.Integer" resetType="Group" resetGroup="employee_name" calculation="Sum">
+		<variableExpression><![CDATA[new Integer(1)]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<variable name="clients_with_cc" class="java.lang.Integer" resetType="Group" resetGroup="employee_name" calculation="Sum">
+		<variableExpression><![CDATA[new Integer($F{count} == 0 ? 0 : 1)]]></variableExpression>
+	</variable>
+	<group name="branch_name">
+		<groupExpression><![CDATA[$F{branch_name}]]></groupExpression>
+		<groupHeader>
+			<band height="21">
+				<textField>
+					<reportElement x="0" y="0" width="555" height="21"/>
+					<textElement>
+						<font size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{branch_name}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band/>
+		</groupFooter>
+	</group>
+	<group name="employee_name">
+		<groupExpression><![CDATA[$F{user_id}]]></groupExpression>
+		<groupHeader>
+			<band height="39">
+				<textField>
+					<reportElement style="style1" x="12" y="19" width="145" height="20"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{user_first_name} + " " + $F{user_last_name}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="58">
+				<textField evaluationTime="Band">
+					<reportElement x="171" y="38" width="80" height="20"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$F{clicount}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="171" y="0" width="80" height="38"/>
+					<textElement verticalAlignment="Bottom"/>
+					<text><![CDATA[# Assigned Accounts]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="251" y="0" width="55" height="38"/>
+					<textElement verticalAlignment="Bottom"/>
+					<text><![CDATA[Total CC's]]></text>
+				</staticText>
+				<textField evaluationTime="Band">
+					<reportElement x="251" y="38" width="55" height="20"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$V{total_count}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Band" pattern="#,##0.00 %">
+					<reportElement x="417" y="38" width="55" height="20"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.Double"><![CDATA[new Double($V{clients_with_cc}.doubleValue() / $F{clicount}.doubleValue())]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="306" y="0" width="111" height="38"/>
+					<textElement verticalAlignment="Bottom"/>
+					<text><![CDATA[Number of accounts without CC]]></text>
+				</staticText>
+				<textField evaluationTime="Band">
+					<reportElement x="306" y="38" width="111" height="20"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.Integer"><![CDATA[$F{clicount}.intValue() - $V{clients_with_cc}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="417" y="0" width="117" height="38"/>
+					<textElement verticalAlignment="Bottom"/>
+					<text><![CDATA[CC Completion Rate]]></text>
+				</staticText>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="47" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="555" height="34"/>
+				<textElement>
+					<font size="18"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Corporate Communicator Report for " + $P{startDate} + " to " + $P{endDate}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="22" splitType="Stretch">
+			<textField>
+				<reportElement style="style1" x="27" y="0" width="224" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{client_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="style1" x="251" y="0" width="55" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{count}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="306" y="0" width="249" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{type_text}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

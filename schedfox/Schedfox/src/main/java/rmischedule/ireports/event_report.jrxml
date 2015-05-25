@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="event_report" pageWidth="612" pageHeight="792" columnWidth="572" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="events" class="java.util.Collection" isForPrompting="false">
+		<defaultValueExpression><![CDATA[new ArrayList(
+    Arrays.asList(new Integer[]
+        {
+        new Integer(483),
+        new Integer(485)
+        }
+    )
+)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="schema" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="showFollowup" class="java.lang.Boolean">
+		<defaultValueExpression><![CDATA[false]]></defaultValueExpression>
+	</parameter>
+	<parameter name="orderby" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["ASC"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+*,
+$P!{schema}.int_to_military_time(COALESCE(schedule_start, schedule_master_start)) as shift_start,
+$P!{schema}.int_to_military_time(COALESCE(schedule_end, schedule_master_end)) as shift_end
+FROM
+$P!{schema}.event
+LEFT JOIN $P!{schema}.event_followup ON event_followup.event_id = event.event_id
+LEFT JOIN $P!{schema}.client ON client.client_id = event.client_id
+LEFT JOIN $P!{schema}.employee ON employee.employee_id = event.employee_id
+LEFT JOIN $P!{schema}.schedule ON (schedule.schedule_id)::text = event.shift_id
+LEFT JOIN $P!{schema}.schedule_master ON (schedule_master.schedule_master_id * -1)::text = substring(event.shift_id, 0, strpos(event.shift_id, '/'))
+LEFT JOIN control_db.branch ON branch.branch_id = COALESCE(client.branch_id, employee.branch_id)
+LEFT JOIN $P!{schema}.event_type ON event_type.event_type_id = event.event_type_id
+LEFT JOIN control_db.user ON "user".user_id = event.entered_by
+WHERE
+$X{IN, event.event_id, events}
+ORDER BY branch.branch_name, entered_on $P!{orderby}, followup_processed_on $P!{orderby}]]>
+	</queryString>
+	<field name="event_id" class="java.lang.Integer"/>
+	<field name="event_type_id" class="java.lang.Integer"/>
+	<field name="shift_id" class="java.lang.String"/>
+	<field name="event_notes" class="java.lang.String"/>
+	<field name="entered_by" class="java.lang.Integer"/>
+	<field name="entered_on" class="java.sql.Timestamp"/>
+	<field name="problem_solver_id" class="java.lang.Integer"/>
+	<field name="employee_id" class="java.lang.Integer"/>
+	<field name="client_id" class="java.lang.Integer"/>
+	<field name="event_followup_id" class="java.lang.Integer"/>
+	<field name="followup_requested_by" class="java.lang.Integer"/>
+	<field name="followup_request_createdon" class="java.sql.Timestamp"/>
+	<field name="followup_processed_by" class="java.lang.Integer"/>
+	<field name="followup_processed_on" class="java.sql.Timestamp"/>
+	<field name="followup_type" class="java.lang.Integer"/>
+	<field name="followup_note" class="java.lang.String"/>
+	<field name="followup_request_group" class="java.lang.Integer"/>
+	<field name="followup_request_user" class="java.lang.Integer"/>
+	<field name="branch_id" class="java.lang.Integer"/>
+	<field name="client_name" class="java.lang.String"/>
+	<field name="client_phone" class="java.lang.String"/>
+	<field name="client_phone2" class="java.lang.String"/>
+	<field name="client_fax" class="java.lang.String"/>
+	<field name="client_address" class="java.lang.String"/>
+	<field name="client_address2" class="java.lang.String"/>
+	<field name="client_city" class="java.lang.String"/>
+	<field name="client_state" class="java.lang.String"/>
+	<field name="client_zip" class="java.lang.String"/>
+	<field name="management_id" class="java.lang.Integer"/>
+	<field name="client_start_date" class="java.sql.Date"/>
+	<field name="client_end_date" class="java.sql.Date"/>
+	<field name="client_is_deleted" class="java.lang.Integer"/>
+	<field name="client_type" class="java.lang.Integer"/>
+	<field name="client_last_updated" class="java.sql.Timestamp"/>
+	<field name="client_worksite" class="java.lang.Integer"/>
+	<field name="client_training_time" class="java.lang.Double"/>
+	<field name="client_bill_for_training" class="java.lang.Boolean"/>
+	<field name="client_worksite_order" class="java.lang.Integer"/>
+	<field name="rate_code_id" class="java.lang.Integer"/>
+	<field name="client_break" class="java.lang.String"/>
+	<field name="store_volume_id" class="java.lang.Integer"/>
+	<field name="store_remote_market_id" class="java.lang.Boolean"/>
+	<field name="url" class="java.lang.String"/>
+	<field name="cusername" class="java.lang.String"/>
+	<field name="cpassword" class="java.lang.String"/>
+	<field name="default_non_billable" class="java.lang.Boolean"/>
+	<field name="check_out_option_id" class="java.lang.Integer"/>
+	<field name="default_contract_renewal" class="org.postgresql.util.PGInterval"/>
+	<field name="checkin_from_post_phone" class="java.lang.Boolean"/>
+	<field name="contact_for_renewal" class="java.lang.Boolean"/>
+	<field name="created_on" class="java.sql.Timestamp"/>
+	<field name="report_time" class="java.sql.Time"/>
+	<field name="notify_dm_late_checkout_minutes" class="java.lang.Integer"/>
+	<field name="log_into_route" class="java.lang.Boolean"/>
+	<field name="employee_first_name" class="java.lang.String"/>
+	<field name="employee_last_name" class="java.lang.String"/>
+	<field name="employee_middle_initial" class="java.lang.String"/>
+	<field name="employee_ssn" class="java.lang.String"/>
+	<field name="employee_address" class="java.lang.String"/>
+	<field name="employee_address2" class="java.lang.String"/>
+	<field name="employee_city" class="java.lang.String"/>
+	<field name="employee_state" class="java.lang.String"/>
+	<field name="employee_zip" class="java.lang.String"/>
+	<field name="employee_phone" class="java.lang.String"/>
+	<field name="employee_phone2" class="java.lang.String"/>
+	<field name="employee_cell" class="java.lang.String"/>
+	<field name="employee_pager" class="java.lang.String"/>
+	<field name="employee_email" class="java.lang.String"/>
+	<field name="employee_hire_date" class="java.sql.Date"/>
+	<field name="employee_term_date" class="java.sql.Date"/>
+	<field name="employee_is_deleted" class="java.lang.Integer"/>
+	<field name="employee_last_updated" class="java.sql.Timestamp"/>
+	<field name="employee_type" class="java.lang.Integer"/>
+	<field name="web_login" class="java.lang.String"/>
+	<field name="web_pw" class="java.lang.String"/>
+	<field name="employee_birthdate" class="java.sql.Date"/>
+	<field name="employee_login" class="java.lang.String"/>
+	<field name="employee_password" class="java.lang.String"/>
+	<field name="is_login_available" class="java.lang.Boolean"/>
+	<field name="employee_type_id" class="java.lang.Integer"/>
+	<field name="employee_email2" class="java.lang.String"/>
+	<field name="email_messaging" class="java.lang.String"/>
+	<field name="sms_messaging" class="java.lang.Boolean"/>
+	<field name="employee_workhrs_pweek" class="java.lang.Integer"/>
+	<field name="accrued_vacation" class="java.lang.Integer"/>
+	<field name="mark_invisible" class="java.lang.Boolean"/>
+	<field name="gender" class="java.lang.Integer"/>
+	<field name="race" class="java.lang.Integer"/>
+	<field name="phone_contact" class="java.lang.Integer"/>
+	<field name="phone2_contact" class="java.lang.Integer"/>
+	<field name="cell_contact" class="java.lang.Integer"/>
+	<field name="email_contact" class="java.lang.Integer"/>
+	<field name="alt_email_contact" class="java.lang.Integer"/>
+	<field name="employee_deleted_on" class="java.sql.Timestamp"/>
+	<field name="full_time" class="java.lang.Boolean"/>
+	<field name="employee_scan_id" class="java.lang.String"/>
+	<field name="employee_emergency" class="java.lang.String"/>
+	<field name="is_sub_contractor" class="java.lang.Boolean"/>
+	<field name="schedule_id" class="java.lang.Integer"/>
+	<field name="schedule_override" class="java.lang.Integer"/>
+	<field name="schedule_date" class="java.sql.Date"/>
+	<field name="schedule_start" class="java.lang.Integer"/>
+	<field name="schedule_end" class="java.lang.Integer"/>
+	<field name="schedule_day" class="java.lang.Integer"/>
+	<field name="schedule_week" class="java.lang.Integer"/>
+	<field name="schedule_type" class="java.lang.Integer"/>
+	<field name="schedule_master_id" class="java.lang.Integer"/>
+	<field name="schedule_group" class="java.lang.Long"/>
+	<field name="schedule_last_updated" class="java.sql.Timestamp"/>
+	<field name="schedule_is_deleted" class="java.lang.Integer"/>
+	<field name="schedule_pay_opt" class="java.lang.String"/>
+	<field name="schedule_bill_opt" class="java.lang.String"/>
+	<field name="last_user_changed" class="java.lang.Integer"/>
+	<field name="history_link_id" class="java.lang.Integer"/>
+	<field name="schedule_master_day" class="java.lang.Integer"/>
+	<field name="schedule_master_start" class="java.lang.Integer"/>
+	<field name="schedule_master_end" class="java.lang.Integer"/>
+	<field name="schedule_master_last_updated" class="java.sql.Timestamp"/>
+	<field name="schedule_master_date_started" class="java.sql.Date"/>
+	<field name="schedule_master_date_ended" class="java.sql.Date"/>
+	<field name="schedule_master_group" class="java.lang.Long"/>
+	<field name="schedule_master_shift" class="java.lang.Integer"/>
+	<field name="schedule_master_pay_opt" class="java.lang.String"/>
+	<field name="schedule_master_bill_opt" class="java.lang.String"/>
+	<field name="schedule_master_type" class="java.lang.Integer"/>
+	<field name="weekly_num_rotation" class="java.lang.Integer"/>
+	<field name="branch_name" class="java.lang.String"/>
+	<field name="branch_management_id" class="java.lang.Integer"/>
+	<field name="timezone" class="java.lang.String"/>
+	<field name="event_group_id" class="java.lang.Integer"/>
+	<field name="event" class="java.lang.String"/>
+	<field name="user_id" class="java.lang.Integer"/>
+	<field name="user_md5" class="java.lang.String"/>
+	<field name="user_login" class="java.lang.String"/>
+	<field name="user_password" class="java.lang.String"/>
+	<field name="user_first_name" class="java.lang.String"/>
+	<field name="user_last_name" class="java.lang.String"/>
+	<field name="user_middle_initial" class="java.lang.String"/>
+	<field name="user_is_deleted" class="java.lang.Integer"/>
+	<field name="user_management_id" class="java.lang.Integer"/>
+	<field name="user_email" class="java.lang.String"/>
+	<field name="email_password" class="java.lang.String"/>
+	<field name="can_view_ssn" class="java.lang.Boolean"/>
+	<field name="shift_start" class="java.lang.String"/>
+	<field name="shift_end" class="java.lang.String"/>
+	<group name="branch">
+		<groupExpression><![CDATA[$F{branch_name}]]></groupExpression>
+		<groupHeader>
+			<band height="29">
+				<textField>
+					<reportElement x="0" y="1" width="555" height="28"/>
+					<textElement>
+						<font fontName="Serif" size="18" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{branch_name}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="16"/>
+		</groupFooter>
+	</group>
+	<group name="employee">
+		<groupExpression><![CDATA[$F{employee_id}]]></groupExpression>
+		<groupHeader>
+			<band height="29">
+				<textField>
+					<reportElement x="24" y="0" width="531" height="28"/>
+					<textElement>
+						<font size="14"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{employee_first_name} + " " + $F{employee_last_name}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band/>
+		</groupFooter>
+	</group>
+	<group name="event">
+		<groupExpression><![CDATA[$F{event_id}]]></groupExpression>
+		<groupHeader>
+			<band height="120" splitType="Immediate">
+				<staticText>
+					<reportElement x="24" y="0" width="144" height="20"/>
+					<box leftPadding="4">
+						<topPen lineWidth="1.25"/>
+						<leftPen lineWidth="1.25"/>
+					</box>
+					<textElement>
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Event Type]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="24" y="20" width="144" height="20"/>
+					<box leftPadding="4">
+						<topPen lineWidth="0.75"/>
+						<leftPen lineWidth="1.25"/>
+						<bottomPen lineWidth="0.75"/>
+						<rightPen lineWidth="0.75"/>
+					</box>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{event}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="418" y="20" width="134" height="20"/>
+					<box leftPadding="4">
+						<topPen lineWidth="0.75"/>
+						<leftPen lineWidth="0.75"/>
+						<bottomPen lineWidth="0.75"/>
+						<rightPen lineWidth="0.75"/>
+					</box>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[new java.text.SimpleDateFormat("MM/dd/yyy HH:mm:ss").format($F{entered_on})]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="418" y="40" width="134" height="20"/>
+					<box leftPadding="4">
+						<topPen lineWidth="1.25"/>
+						<rightPen lineWidth="1.25"/>
+					</box>
+					<textElement>
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Entered By]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="418" y="60" width="134" height="20"/>
+					<box leftPadding="4">
+						<topPen lineWidth="0.75"/>
+						<leftPen lineWidth="0.75"/>
+						<bottomPen lineWidth="0.75"/>
+						<rightPen lineWidth="1.25"/>
+					</box>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{user_first_name} + " " + $F{user_last_name}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="24" y="79" width="528" height="20"/>
+					<box leftPadding="4">
+						<topPen lineWidth="0.75"/>
+						<leftPen lineWidth="1.25"/>
+						<bottomPen lineWidth="0.75"/>
+						<rightPen lineWidth="1.25"/>
+					</box>
+					<textElement>
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Event Text]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="24" y="99" width="528" height="20"/>
+					<box leftPadding="4">
+						<leftPen lineWidth="1.25"/>
+						<bottomPen lineWidth="1.25"/>
+						<rightPen lineWidth="1.25"/>
+					</box>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{event_notes}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="418" y="0" width="134" height="20"/>
+					<box leftPadding="4">
+						<topPen lineWidth="1.25"/>
+						<leftPen lineWidth="0.75"/>
+						<rightPen lineWidth="0.75"/>
+					</box>
+					<textElement>
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Entered On]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="168" y="0" width="250" height="20"/>
+					<box leftPadding="4">
+						<topPen lineWidth="1.25"/>
+						<leftPen lineWidth="0.75"/>
+						<rightPen lineWidth="0.75"/>
+					</box>
+					<textElement>
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Event Occurred At]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="168" y="20" width="250" height="20"/>
+					<box leftPadding="4">
+						<topPen lineWidth="0.75"/>
+						<leftPen lineWidth="0.75"/>
+						<bottomPen lineWidth="0.75"/>
+						<rightPen lineWidth="0.75"/>
+					</box>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{client_name}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="168" y="40" width="125" height="20"/>
+					<box leftPadding="4">
+						<topPen lineWidth="1.25"/>
+						<leftPen lineWidth="0.75"/>
+						<rightPen lineWidth="0.75"/>
+					</box>
+					<textElement>
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Shift Time Start]]></text>
+				</staticText>
+				<textField pattern="MM/dd/yyyy" isBlankWhenNull="true">
+					<reportElement x="24" y="60" width="144" height="20"/>
+					<box leftPadding="4">
+						<topPen lineWidth="0.75"/>
+						<leftPen lineWidth="1.25"/>
+						<bottomPen lineWidth="0.75"/>
+						<rightPen lineWidth="0.75"/>
+					</box>
+					<textElement/>
+					<textFieldExpression class="java.util.Date"><![CDATA[$F{schedule_date}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="24" y="40" width="144" height="20"/>
+					<box leftPadding="4">
+						<topPen lineWidth="1.25"/>
+						<leftPen lineWidth="1.25"/>
+					</box>
+					<textElement>
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Shift Date]]></text>
+				</staticText>
+				<textField isBlankWhenNull="true">
+					<reportElement x="168" y="60" width="125" height="20"/>
+					<box leftPadding="4">
+						<topPen lineWidth="0.75"/>
+						<leftPen lineWidth="0.75"/>
+						<bottomPen lineWidth="0.75"/>
+						<rightPen lineWidth="0.75"/>
+					</box>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{shift_start}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="293" y="40" width="125" height="20"/>
+					<box leftPadding="4">
+						<topPen lineWidth="1.25"/>
+						<leftPen lineWidth="0.75"/>
+						<rightPen lineWidth="0.75"/>
+					</box>
+					<textElement>
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Shift Time End]]></text>
+				</staticText>
+				<textField isBlankWhenNull="true">
+					<reportElement x="293" y="60" width="125" height="20"/>
+					<box leftPadding="4">
+						<topPen lineWidth="0.75"/>
+						<leftPen lineWidth="0.75"/>
+						<bottomPen lineWidth="0.75"/>
+						<rightPen lineWidth="0.75"/>
+					</box>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{shift_end}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="25"/>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="41" splitType="Stretch">
+			<printWhenExpression><![CDATA[$F{followup_note} != null && $P{showFollowup}]]></printWhenExpression>
+			<staticText>
+				<reportElement x="24" y="0" width="528" height="20"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.75"/>
+					<leftPen lineWidth="1.25"/>
+					<bottomPen lineWidth="0.75"/>
+					<rightPen lineWidth="1.25"/>
+				</box>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Event Followup]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="24" y="20" width="528" height="20"/>
+				<box leftPadding="4">
+					<leftPen lineWidth="1.25"/>
+					<bottomPen lineWidth="1.25"/>
+					<rightPen lineWidth="1.25"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{followup_note}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

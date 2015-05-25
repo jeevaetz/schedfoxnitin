@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="sales_commission" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="startDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2013-01-01"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="endDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2013-03-01"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="schema" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+client_name,
+start_date as contract_start_date,
+COALESCE("user".user_first_name, 'No Sales Person') as salespersonfirst,
+COALESCE("user".user_last_name, 'No Sales Person') as salespersonlast,
+COALESCE(manager.user_last_name, 'No Sales Manager') as salesmanagerfirst,
+COALESCE(manager.user_last_name, 'No Sales Manager') as salesmanagerlast,
+time_worked as number_of_hours
+FROM
+$P!{schema}.client_contract
+INNER JOIN $P!{schema}.client ON client.client_id = client_contract.client_id
+LEFT JOIN
+(
+	SELECT cid, SUM(time_worked) as time_worked FROM
+	$P!{schema}.get_client_pay_amounts_with_train(cast(date_trunc('week', current_date) as date) - 7, cast(date_trunc('week', current_date) as date) - 1, -1, null::integer[])
+	GROUP BY cid
+) AS sched ON sched.cid = client.client_id
+LEFT JOIN control_db.user ON "user".user_id = client_contract.salesperson
+LEFT JOIN control_db.user as manager ON manager.user_id = client_contract.salesmanager
+WHERE
+start_date BETWEEN DATE($P{startDate}) AND DATE($P{endDate})
+ORDER BY salespersonfirst, salespersonlast]]>
+	</queryString>
+	<field name="client_name" class="java.lang.String"/>
+	<field name="contract_start_date" class="java.sql.Date"/>
+	<field name="salespersonfirst" class="java.lang.String"/>
+	<field name="salespersonlast" class="java.lang.String"/>
+	<field name="salesmanagerfirst" class="java.lang.String"/>
+	<field name="salesmanagerlast" class="java.lang.String"/>
+	<field name="number_of_hours" class="java.math.BigDecimal"/>
+	<variable name="number_of_hours" class="java.math.BigDecimal" resetType="Group" resetGroup="salesperson" calculation="Sum">
+		<variableExpression><![CDATA[$F{number_of_hours}]]></variableExpression>
+	</variable>
+	<group name="salesperson">
+		<groupExpression><![CDATA[$F{salespersonfirst}]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band height="27">
+				<textField>
+					<reportElement x="599" y="0" width="100" height="20"/>
+					<textElement/>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{number_of_hours}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="79" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="599" height="53"/>
+				<textElement>
+					<font size="30"/>
+				</textElement>
+				<text><![CDATA[Sales Commission Report]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="21" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="100" height="20"/>
+				<textElement/>
+				<text><![CDATA[Client Name]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="100" y="0" width="100" height="20"/>
+				<textElement/>
+				<text><![CDATA[Contract Start Date]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="199" y="0" width="100" height="20"/>
+				<textElement/>
+				<text><![CDATA[Sales Person First]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="299" y="0" width="100" height="20"/>
+				<textElement/>
+				<text><![CDATA[Sales Person Last]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="399" y="0" width="100" height="20"/>
+				<textElement/>
+				<text><![CDATA[Sales Manager First]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="499" y="0" width="100" height="20"/>
+				<textElement/>
+				<text><![CDATA[Sales Manager Last]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="599" y="1" width="100" height="20"/>
+				<textElement/>
+				<text><![CDATA[Number of Hours]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{client_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="100" y="0" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{contract_start_date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="200" y="0" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{salespersonfirst}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="299" y="0" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{salespersonlast}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="399" y="0" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{salesmanagerfirst}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="499" y="0" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{salesmanagerlast}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="599" y="0" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{number_of_hours}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="26" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>

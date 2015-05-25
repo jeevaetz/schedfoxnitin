@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="new_accounts" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="4.0"/>
+	<property name="ireport.x" value="651"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="active_db" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT * FROM
+$P!{active_db}.client
+LEFT JOIN
+(SELECT MAX("date") as end_date, cid  FROM $P!{active_db}.assemble_schedule(DATE('2011-06-04'), DATE('2013-06-04'), -1) GROUP BY cid) as data ON data.cid = client.client_id
+WHERE
+client.client_start_date BETWEEN DATE('2011-06-04') AND DATE('2013-06-04')
+ORDER BY client_name]]>
+	</queryString>
+	<field name="client_id" class="java.lang.Integer"/>
+	<field name="branch_id" class="java.lang.Integer"/>
+	<field name="client_name" class="java.lang.String"/>
+	<field name="client_phone" class="java.lang.String"/>
+	<field name="client_phone2" class="java.lang.String"/>
+	<field name="client_fax" class="java.lang.String"/>
+	<field name="client_address" class="java.lang.String"/>
+	<field name="client_address2" class="java.lang.String"/>
+	<field name="client_city" class="java.lang.String"/>
+	<field name="client_state" class="java.lang.String"/>
+	<field name="client_zip" class="java.lang.String"/>
+	<field name="management_id" class="java.lang.Integer"/>
+	<field name="client_start_date" class="java.sql.Date"/>
+	<field name="client_end_date" class="java.sql.Date"/>
+	<field name="client_is_deleted" class="java.lang.Integer"/>
+	<field name="client_type" class="java.lang.Integer"/>
+	<field name="client_last_updated" class="java.sql.Timestamp"/>
+	<field name="client_worksite" class="java.lang.Integer"/>
+	<field name="client_training_time" class="java.lang.Double"/>
+	<field name="client_bill_for_training" class="java.lang.Boolean"/>
+	<field name="client_worksite_order" class="java.lang.Integer"/>
+	<field name="rate_code_id" class="java.lang.Integer"/>
+	<field name="client_break" class="java.lang.String"/>
+	<field name="store_volume_id" class="java.lang.Integer"/>
+	<field name="store_remote_market_id" class="java.lang.Boolean"/>
+	<field name="url" class="java.lang.String"/>
+	<field name="cusername" class="java.lang.String"/>
+	<field name="cpassword" class="java.lang.String"/>
+	<field name="default_non_billable" class="java.lang.Boolean"/>
+	<field name="check_out_option_id" class="java.lang.Integer"/>
+	<field name="default_contract_renewal" class="org.postgresql.util.PGInterval"/>
+	<field name="checkin_from_post_phone" class="java.lang.Boolean"/>
+	<field name="contact_for_renewal" class="java.lang.Boolean"/>
+	<field name="created_on" class="java.sql.Timestamp"/>
+	<field name="end_date" class="java.sql.Date"/>
+	<field name="cid" class="java.lang.Integer"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="44" splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="61" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="41" width="134" height="20"/>
+				<textElement/>
+				<text><![CDATA[Location Name]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="134" y="41" width="66" height="20"/>
+				<textElement/>
+				<text><![CDATA[Creation Date]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="200" y="41" width="79" height="20"/>
+				<textElement/>
+				<text><![CDATA[Deactivate Date]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="279" y="41" width="89" height="20"/>
+				<textElement/>
+				<text><![CDATA[Last Day Worked]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="368" y="41" width="187" height="20"/>
+				<textElement/>
+				<text><![CDATA[Reason]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="16" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="134" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{client_name}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/dd/yyyy">
+				<reportElement x="134" y="0" width="66" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{client_start_date}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/dd/yyyy">
+				<reportElement x="200" y="0" width="79" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{client_end_date}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/dd/yyyy">
+				<reportElement x="279" y="0" width="89" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{end_date}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>

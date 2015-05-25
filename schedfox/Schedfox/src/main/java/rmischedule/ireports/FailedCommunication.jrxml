@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="FailedCommunication" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="3.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="active_db" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+messaging_communication.*, user_first_name, user_last_name,
+(CASE WHEN client.client_id IS NOT NULL THEN client_name ELSE employee.employee_first_name || ' ' || employee.employee_last_name END) as contact_name,
+(SELECT COUNT(*) FROM $P!{active_db}.messaging_communication as icomm WHERE messaging_communication_batch.messaging_communication_batch_id = icomm.messaging_communication_batch_id AND error_num IS NULL) as successful_count,
+(SELECT COUNT(*) FROM $P!{active_db}.messaging_communication as icomm WHERE messaging_communication_batch.messaging_communication_batch_id = icomm.messaging_communication_batch_id AND error_num IS NOT NULL AND error_num > 0) as error_count
+
+FROM
+$P!{active_db}.messaging_communication_batch
+INNER JOIN $P!{active_db}.messaging_communication ON
+		messaging_communication_batch.messaging_communication_batch_id = messaging_communication.messaging_communication_batch_id
+LEFT JOIN $P!{active_db}.client_contact ON client_contact.client_contact_email = messaging_communication.sent_to
+LEFT JOIN $P!{active_db}.client ON client.client_id = client_contact.client_id
+LEFT JOIN $P!{active_db}.employee ON messaging_communication.employee_id = employee.employee_id
+INNER JOIN control_db.user ON "user".user_id = messaging_communication_batch.user_id
+WHERE
+error_num IS NOT NULL AND error_num > 0
+ORDER BY messaging_communication.messaging_communication_batch_id]]>
+	</queryString>
+	<field name="messaging_communication_id" class="java.lang.Integer"/>
+	<field name="user_id" class="java.lang.Integer"/>
+	<field name="shift_id" class="java.lang.String"/>
+	<field name="datetimerequested" class="java.sql.Timestamp"/>
+	<field name="datetimesent" class="java.sql.Timestamp"/>
+	<field name="sent_to" class="java.lang.String"/>
+	<field name="ccd" class="java.lang.String"/>
+	<field name="subject" class="java.lang.String"/>
+	<field name="body" class="java.lang.String"/>
+	<field name="employee_id" class="java.lang.Integer"/>
+	<field name="sched_start" class="java.sql.Date"/>
+	<field name="sched_end" class="java.sql.Date"/>
+	<field name="issms" class="java.lang.Boolean"/>
+	<field name="isemail" class="java.lang.Boolean"/>
+	<field name="attach_pdf" class="java.lang.Boolean"/>
+	<field name="from_email" class="java.lang.String"/>
+	<field name="last_error" class="java.sql.Timestamp"/>
+	<field name="error_num" class="java.lang.Integer"/>
+	<field name="messaging_id" class="java.lang.Integer"/>
+	<field name="messaging_communication_batch_id" class="java.lang.Integer"/>
+	<field name="user_first_name" class="java.lang.String"/>
+	<field name="user_last_name" class="java.lang.String"/>
+	<field name="contact_name" class="java.lang.String"/>
+	<field name="successful_count" class="java.lang.Long"/>
+	<field name="error_count" class="java.lang.Long"/>
+	<group name="message_sent">
+		<groupExpression><![CDATA[$F{messaging_communication_batch_id}]]></groupExpression>
+		<groupHeader>
+			<band height="61">
+				<staticText>
+					<reportElement x="42" y="41" width="157" height="20"/>
+					<textElement/>
+					<text><![CDATA[Failed Contact]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="199" y="41" width="66" height="20"/>
+					<textElement/>
+					<text><![CDATA[Contact Type]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="265" y="41" width="223" height="20"/>
+					<textElement/>
+					<text><![CDATA[Contact Value]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="488" y="41" width="67" height="20"/>
+					<textElement/>
+					<text><![CDATA[Date of Error]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="0" y="19" width="226" height="18"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{user_first_name} + " " + $F{user_last_name}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="226" y="19" width="100" height="18"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$F{successful_count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="326" y="19" width="100" height="18"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$F{error_count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="426" y="19" width="100" height="18"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$F{error_count} + $F{successful_count}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="0" width="226" height="20"/>
+					<textElement/>
+					<text><![CDATA[User Sending Correspondence]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="226" y="0" width="100" height="20"/>
+					<textElement/>
+					<text><![CDATA[Successful Messages]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="326" y="0" width="100" height="20"/>
+					<textElement/>
+					<text><![CDATA[Error Messages]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="426" y="0" width="100" height="20"/>
+					<textElement/>
+					<text><![CDATA[Total Messages]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="23"/>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="79" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="555" height="36"/>
+				<textElement>
+					<font size="24"/>
+				</textElement>
+				<text><![CDATA[Issues with Emails / SMS's]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="1" splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="16" splitType="Stretch">
+			<textField>
+				<reportElement x="42" y="0" width="157" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{contact_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="199" y="0" width="66" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{issms}.booleanValue() ? "Phone" : "Email"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="265" y="0" width="223" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{sent_to}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="488" y="0" width="67" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{last_error}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD JasperReport//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="cross_branch_report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<parameter name="startDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2011-12-12"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="endDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2011-12-19"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="schema" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT employee_first_name, employee_last_name FROM
+(
+	SELECT employee_first_name, employee_last_name, employee.branch_id FROM
+	(
+		SELECT employee_ssn
+		FROM $P!{schema}.employee
+		WHERE employee_is_deleted != 1
+		GROUP BY employee_ssn HAVING COUNT(*) > 1
+	) as duplicate_emps
+	INNER JOIN $P!{schema}.employee ON employee.employee_ssn = duplicate_emps.employee_ssn
+	INNER JOIN $P!{schema}.assemble_schedule(DATE($P{startDate}), DATE($P{endDate}), -1, -1) as assem ON assem.eid = employee.employee_id
+	GROUP BY employee_first_name, employee_last_name, employee.branch_id
+	ORDER BY employee_first_name, employee_last_name, employee.branch_id
+) as mult_scheds
+GROUP BY employee_first_name, employee_last_name
+HAVING COUNT(*) > 1]]>
+	</queryString>
+	<field name="employee_first_name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_last_name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="76">
+			<staticText>
+				<reportElement x="0" y="0" width="759" height="42"/>
+				<textElement>
+					<font size="30"/>
+				</textElement>
+				<text><![CDATA[Employees Working Multiple Branches Report]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="534" y="48" width="268" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["From " + $P{startDate} + " to " + $P{endDate}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<columnHeader>
+		<band height="65">
+			<staticText>
+				<reportElement x="0" y="45" width="198" height="20"/>
+				<textElement/>
+				<text><![CDATA[Employee Full Name]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="22">
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="0" width="306" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{employee_first_name} + " " + $F{employee_last_name}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band/>
+	</pageFooter>
+	<summary>
+		<band/>
+	</summary>
+</jasperReport>

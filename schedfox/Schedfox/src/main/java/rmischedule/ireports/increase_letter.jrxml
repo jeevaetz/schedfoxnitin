@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="increase_letter" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="144"/>
+	<parameter name="letter_body" class="java.lang.String"/>
+	<parameter name="image_read" class="java.io.InputStream"/>
+	<parameter name="showDetail" class="java.lang.Boolean">
+		<defaultValueExpression><![CDATA[new Boolean(true)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="background" class="java.io.InputStream"/>
+	<parameter name="sigFile" class="java.io.InputStream"/>
+	<background>
+		<band height="802" splitType="Stretch">
+			<image scaleImage="RealSize">
+				<reportElement x="0" y="-19" width="575" height="821"/>
+				<imageExpression class="java.io.InputStream"><![CDATA[$P{background}]]></imageExpression>
+			</image>
+			<image scaleImage="RetainShape">
+				<reportElement positionType="FixRelativeToBottom" x="102" y="667" width="332" height="61"/>
+				<imageExpression class="java.io.InputStream"><![CDATA[$P{sigFile}]]></imageExpression>
+			</image>
+		</band>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch">
+			<printWhenExpression><![CDATA[$P{image_read} != null && $P{showDetail}.booleanValue()]]></printWhenExpression>
+		</band>
+	</columnHeader>
+	<detail>
+		<band splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band height="644" splitType="Stretch">
+			<textField>
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="120" y="0" width="435" height="644"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{letter_body}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

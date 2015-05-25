@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OfficerDailyReport" columnCount="3" printOrder="Horizontal" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="185" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Empty">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="176"/>
+	<parameter name="EmployeeImage" class="java.io.InputStream"/>
+	<parameter name="officeDailyReportDate" class="java.util.Date"/>
+	<parameter name="officerName" class="java.lang.String"/>
+	<parameter name="loginDate" class="java.util.Date"/>
+	<parameter name="officerDailyReportText" class="java.lang.String"/>
+	<parameter name="logo" class="java.awt.Image"/>
+	<parameter name="logoutDate" class="java.util.Date"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["C:\\work\\schedfox\\PatrolProWebsite\\src\\java\\com\\patrolpro\\reports\\jasper\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="odrTexts" class="java.util.Collection"/>
+	<parameter name="documentIds" class="java.util.List">
+		<defaultValueExpression><![CDATA[new ArrayList()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="active_db" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="clientName" class="java.lang.String"/>
+	<parameter name="dateFormatter" class="java.text.DateFormat">
+		<defaultValueExpression><![CDATA[$P{REPORT_FORMAT_FACTORY}.createDateFormat("MM/dd/yyyy HHmm", $P{REPORT_LOCALE}, $P{REPORT_TIME_ZONE})]]></defaultValueExpression>
+	</parameter>
+	<parameter name="incidentCount" class="java.lang.Integer"/>
+	<parameter name="wayPointScanCount" class="java.lang.Integer"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="documentData" class="java.lang.Object"/>
+	<field name="thumbnailData" class="java.lang.Object"/>
+	<group name="cname">
+		<groupExpression><![CDATA[$P{clientName}]]></groupExpression>
+		<groupHeader>
+			<band height="254">
+				<textField pattern="" isBlankWhenNull="true">
+					<reportElement x="167" y="60" width="148" height="20"/>
+					<textElement>
+						<font size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$R{loginTime}]]></textFieldExpression>
+				</textField>
+				<textField pattern="" isBlankWhenNull="true">
+					<reportElement x="315" y="60" width="217" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{dateFormatter}.format($P{loginDate})]]></textFieldExpression>
+				</textField>
+				<textField pattern="" isBlankWhenNull="true">
+					<reportElement x="0" y="185" width="555" height="21"/>
+					<textElement textAlignment="Center">
+						<font size="16" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$R{dailyReportTexts}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="0" y="184" width="555" height="1"/>
+				</line>
+				<textField>
+					<reportElement x="167" y="80" width="148" height="20"/>
+					<textElement>
+						<font size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$R{logoutTime}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="315" y="80" width="217" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{dateFormatter}.format($P{logoutDate})]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="0" y="206" width="555" height="1"/>
+				</line>
+				<line>
+					<reportElement x="0" y="184" width="1" height="22"/>
+				</line>
+				<subreport>
+					<reportElement x="0" y="207" width="555" height="36"/>
+					<subreportParameter name="REPORT_TIME_ZONE">
+						<subreportParameterExpression><![CDATA[$P{REPORT_TIME_ZONE}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="REPORT_RESOURCE_BUNDLE">
+						<subreportParameterExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{odrTexts})]]></dataSourceExpression>
+					<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "OfficerDailyReportText.jasper"]]></subreportExpression>
+				</subreport>
+				<line>
+					<reportElement stretchType="RelativeToTallestObject" x="555" y="24" width="1" height="161"/>
+				</line>
+				<line>
+					<reportElement x="555" y="185" width="1" height="22"/>
+				</line>
+				<image hAlign="Center" vAlign="Middle" onErrorType="Blank">
+					<reportElement x="4" y="30" width="131" height="150"/>
+					<imageExpression class="java.net.URL"><![CDATA[$P{EmployeeImage}]]></imageExpression>
+				</image>
+				<line>
+					<reportElement stretchType="RelativeToTallestObject" x="0" y="24" width="1" height="163"/>
+				</line>
+				<line>
+					<reportElement x="145" y="25" width="1" height="160"/>
+				</line>
+				<textField>
+					<reportElement x="0" y="0" width="555" height="24"/>
+					<box leftPadding="5">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Bottom">
+						<font size="18" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{clientName}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="167" y="40" width="148" height="20"/>
+					<textElement>
+						<font size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$R{officer}]]></textFieldExpression>
+				</textField>
+				<textField pattern="" isBlankWhenNull="true">
+					<reportElement x="315" y="40" width="217" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{officerName}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="167" y="100" width="148" height="20"/>
+					<textElement>
+						<font size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$R{numberOfIncidents}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="167" y="120" width="148" height="20"/>
+					<textElement>
+						<font size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$R{waypointsScanned}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="315" y="100" width="217" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{incidentCount}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="315" y="120" width="217" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{wayPointScanCount}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="81" splitType="Stretch">
+			<image hAlign="Center" onErrorType="Blank">
+				<reportElement x="0" y="0" width="555" height="64"/>
+				<imageExpression class="java.awt.Image"><![CDATA[$P{logo}]]></imageExpression>
+			</image>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="134" splitType="Stretch">
+			<rectangle>
+				<reportElement mode="Transparent" x="1" y="0" width="178" height="130"/>
+			</rectangle>
+			<image scaleImage="RetainShape" hAlign="Center" onErrorType="Blank">
+				<reportElement mode="Opaque" x="4" y="4" width="175" height="126"/>
+				<imageExpression class="java.io.InputStream"><![CDATA[new java.io.ByteArrayInputStream((byte[])$F{documentData})]]></imageExpression>
+			</image>
+			<line>
+				<reportElement positionType="FixRelativeToBottom" x="1" y="-10" width="554" height="1"/>
+			</line>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

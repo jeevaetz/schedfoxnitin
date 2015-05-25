@@ -1,0 +1,655 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD JasperReport//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="client_payment_ratio" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<style name="ratio_paid" isDefault="false" forecolor="#000000" fontSize="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[new Boolean($F{ratio}.doubleValue() > 0.68)]]></conditionExpression>
+			<style isDefault="false" style="ratio_paid" forecolor="#990000" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[new Boolean($F{ratio}.doubleValue() > 0.64)]]></conditionExpression>
+			<style isDefault="false" style="ratio_paid" forecolor="#FF8716" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+		</conditionalStyle>
+	</style>
+	<style name="ratio_over" isDefault="false" forecolor="#000000" fontSize="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[new Boolean($F{overtimeratio}.doubleValue() > 0.68)]]></conditionExpression>
+			<style isDefault="false" style="ratio_over" forecolor="#990000" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[new Boolean($F{overtimeratio}.doubleValue() > 0.64)]]></conditionExpression>
+			<style isDefault="false" style="ratio_over" forecolor="#FF8716" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+		</conditionalStyle>
+	</style>
+	<style name="ratio_total" isDefault="false" forecolor="#000000" fontSize="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[new Boolean($F{tot_ratio}.doubleValue() >= 5.0)]]></conditionExpression>
+			<style isDefault="false" style="ratio_total" forecolor="#3B8E20"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[new Boolean($F{tot_ratio}.doubleValue() > 0.68)]]></conditionExpression>
+			<style isDefault="false" style="ratio_total" forecolor="#990000" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[new Boolean($F{tot_ratio}.doubleValue() > 0.64)]]></conditionExpression>
+			<style isDefault="false" style="ratio_total" forecolor="#FF8716" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+		</conditionalStyle>
+	</style>
+	<style name="client_heading" isDefault="false" mode="Transparent" forecolor="#000000" fontSize="12" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[new Boolean($V{total_ratio}.doubleValue() > 0.68)]]></conditionExpression>
+			<style isDefault="false" style="client_heading" forecolor="#990000"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[new Boolean($V{total_ratio}.doubleValue() > 0.64)]]></conditionExpression>
+			<style isDefault="false" style="client_heading" forecolor="#FF8716" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="start_date" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[new String("05/02/2011")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="end_date" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[new String("05/08/2011")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="branch_id" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[new Integer(-1)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="schema" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+(COALESCE(paid_amount, 0) / greatest(COALESCE(bill_amount, 0), 1)) AS ratio,
+(COALESCE(overtime_amount, 0) / greatest(COALESCE(bill_overtime_amount, 0), 1)) AS overtimeratio,
+((COALESCE(paid_amount, 0) + COALESCE(overtime_amount, 0)) /
+ (CASE WHEN
+     COALESCE(bill_amount, 0) + COALESCE(bill_overtime_amount, 0) = 0
+  THEN
+     1
+  ELSE
+     COALESCE(bill_amount, 0) + COALESCE(bill_overtime_amount, 0)
+  END)) AS tot_ratio,
+greatest(cli_pay_amount, emp_pay_amount) as max_pay_amt,
+greatest(cli_bill_amount, emp_bill_amount) as max_bill_amt,
+greatest(cli_overtime_amount, emp_overtime_amount) as max_overtime_amt,
+greatest(cli_overtime_bill, emp_overtime_bill) as max_overtime_bill,
+(CASE WHEN time_worked > 40 THEN 40 ELSE time_worked END) as reghrs,
+(CASE WHEN time_worked > 40 THEN time_worked - 40 ELSE 0 END) as overtimehrs,
+amt.*
+FROM
+$P!{schema}.get_client_pay_amounts(DATE($P{start_date}), DATE($P{end_date}), $P{branch_id}::integer, null::integer[]) as amt
+INNER JOIN $P!{schema}.client ON client.client_id = cid AND client.branch_id != 4
+ORDER BY cname ASC, tot_ratio DESC]]>
+	</queryString>
+	<field name="ratio" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="overtimeratio" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="tot_ratio" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="max_pay_amt" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="max_bill_amt" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="max_overtime_amt" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="max_overtime_bill" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="reghrs" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="overtimehrs" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="ename" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="cname" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="eid" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="cid" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="rate_code_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="week_started" class="java.sql.Date">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="time_worked" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="rate_code_name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="hour_type" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="cli_pay_amount" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="cli_overtime_amount" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="cli_bill_amount" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="cli_overtime_bill" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="emp_pay_amount" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="emp_overtime_amount" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="emp_bill_amount" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="emp_overtime_bill" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="paid_amount" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="overtime_amount" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="bill_amount" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="bill_overtime_amount" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="ss_tax" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="liability_tax" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="carliability_tax" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="wc" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="futa" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="unemployment" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<variable name="total_bill" class="java.math.BigDecimal" resetType="Group" resetGroup="Client Name" calculation="Sum">
+		<variableExpression><![CDATA[$F{bill_amount}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="total_paid" class="java.math.BigDecimal" resetType="Group" resetGroup="Client Name" calculation="Sum">
+		<variableExpression><![CDATA[$F{paid_amount}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="total_over_bill" class="java.math.BigDecimal" resetType="Group" resetGroup="Client Name" calculation="Sum">
+		<variableExpression><![CDATA[$F{bill_overtime_amount}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="total_over_paid" class="java.math.BigDecimal" resetType="Group" resetGroup="Client Name" calculation="Sum">
+		<variableExpression><![CDATA[$F{overtime_amount}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="total_ratio" class="java.math.BigDecimal" resetType="Group" resetGroup="Client Name">
+		<variableExpression><![CDATA[new BigDecimal(
+new Double(
+($V{total_paid} == null ? 0.0 : $V{total_paid}.doubleValue()) +
+($V{total_over_paid} == null ? 0.0 : $V{total_over_paid}.doubleValue())
+).doubleValue() /
+
+(
+    new Double(
+    ($V{total_bill} == null ? 0.0 : $V{total_bill}.doubleValue()) +
+    ($V{total_over_bill} == null ? 0.0 : $V{total_over_bill}.doubleValue())
+    ).doubleValue() == 0.0 ? 1.0 :
+    new Double(
+    ($V{total_bill} == null ? 0.0 : $V{total_bill}.doubleValue()) +
+    ($V{total_over_bill} == null ? 0.0 : $V{total_over_bill}.doubleValue())
+    ).doubleValue()
+)
+)]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="total_ss" class="java.math.BigDecimal" resetType="Group" resetGroup="Client Name" calculation="Sum">
+		<variableExpression><![CDATA[$F{ss_tax}]]></variableExpression>
+	</variable>
+	<variable name="total_liability" class="java.math.BigDecimal" resetType="Group" resetGroup="Client Name" calculation="Sum">
+		<variableExpression><![CDATA[$F{liability_tax}]]></variableExpression>
+	</variable>
+	<variable name="total_carliability" class="java.math.BigDecimal" resetType="Group" resetGroup="Client Name" calculation="Sum">
+		<variableExpression><![CDATA[$F{carliability_tax}]]></variableExpression>
+	</variable>
+	<variable name="total_wc" class="java.math.BigDecimal" resetType="Group" resetGroup="Client Name" calculation="Sum">
+		<variableExpression><![CDATA[$F{wc}]]></variableExpression>
+	</variable>
+	<variable name="total_futa" class="java.math.BigDecimal" resetType="Group" resetGroup="Client Name" calculation="Sum">
+		<variableExpression><![CDATA[$F{futa}]]></variableExpression>
+	</variable>
+	<variable name="total_unemployment" class="java.math.BigDecimal" resetType="Group" resetGroup="Client Name" calculation="Sum">
+		<variableExpression><![CDATA[$F{unemployment}]]></variableExpression>
+	</variable>
+	<variable name="total_taxes" class="java.math.BigDecimal" resetType="Group" resetGroup="Client Name" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal(
+    $F{ss_tax}.doubleValue() +
+    $F{liability_tax}.doubleValue() +
+    $F{carliability_tax}.doubleValue() +
+    $F{wc}.doubleValue() +
+    $F{futa}.doubleValue() +
+    $F{unemployment}.doubleValue()
+)]]></variableExpression>
+	</variable>
+	<group name="Client Name">
+		<groupExpression><![CDATA[$F{cname}]]></groupExpression>
+		<groupHeader>
+			<band height="51">
+				<textField evaluationTime="Group" evaluationGroup="Client Name" hyperlinkType="None">
+					<reportElement style="client_heading" x="0" y="0" width="529" height="30"/>
+					<textElement>
+						<font size="22"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{cname}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="1" y="33" width="135" height="18"/>
+					<textElement/>
+					<text><![CDATA[Employee]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="136" y="33" width="53" height="18"/>
+					<textElement/>
+					<text><![CDATA[Rate Code]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="189" y="33" width="114" height="18"/>
+					<textElement/>
+					<text><![CDATA[Bill Amount]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="470" y="33" width="114" height="18"/>
+					<textElement/>
+					<text><![CDATA[Bill Overtime]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="584" y="33" width="114" height="18"/>
+					<textElement/>
+					<text><![CDATA[Pay Overtime]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="417" y="33" width="53" height="18"/>
+					<textElement/>
+					<text><![CDATA[Paid Ratio]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="696" y="33" width="53" height="18"/>
+					<textElement/>
+					<text><![CDATA[Over Ratio]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="749" y="33" width="53" height="18"/>
+					<textElement/>
+					<text><![CDATA[Total Ratio]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="303" y="33" width="114" height="18"/>
+					<textElement/>
+					<text><![CDATA[Paid Amount]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="131">
+				<textField pattern="¤ #,##0.00" hyperlinkType="None">
+					<reportElement style="client_heading" x="560" y="42" width="77" height="14"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_paid}]]></textFieldExpression>
+				</textField>
+				<textField pattern="¤ #,##0.00" hyperlinkType="None">
+					<reportElement style="client_heading" x="560" y="28" width="77" height="14"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_over_bill}]]></textFieldExpression>
+				</textField>
+				<textField pattern="¤ #,##0.00" hyperlinkType="None">
+					<reportElement style="client_heading" x="560" y="56" width="67" height="14"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_over_paid}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement style="client_heading" x="550" y="28" width="10" height="14"/>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font size="10" isBold="false"/>
+					</textElement>
+					<text><![CDATA[+]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="client_heading" x="550" y="42" width="10" height="14"/>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font size="10"/>
+					</textElement>
+					<text><![CDATA[-]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="client_heading" x="550" y="57" width="10" height="14"/>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font size="10"/>
+					</textElement>
+					<text><![CDATA[-]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="client_heading" x="550" y="84" width="10" height="14"/>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font size="10" isBold="false"/>
+					</textElement>
+					<text><![CDATA[=]]></text>
+				</staticText>
+				<textField pattern="¤ #,##0.00" hyperlinkType="None">
+					<reportElement style="client_heading" x="560" y="85" width="77" height="14"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal($V{total_bill}.doubleValue() + $V{total_over_bill}.doubleValue()
+- $V{total_paid}.doubleValue() - $V{total_over_paid}.doubleValue() -
+$V{total_taxes}.doubleValue())]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement style="client_heading" x="688" y="42" width="114" height="20"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[Client Profit Ratio:]]></text>
+				</staticText>
+				<textField pattern="#,##0.00 %" hyperlinkType="None">
+					<reportElement style="client_heading" x="688" y="63" width="114" height="20"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_ratio}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement style="client_heading" x="11" y="14" width="104" height="14"/>
+					<textElement verticalAlignment="Top">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<text><![CDATA[SS Tax:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="client_heading" x="11" y="28" width="104" height="14"/>
+					<textElement verticalAlignment="Top">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<text><![CDATA[Liability Tax:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="client_heading" x="211" y="14" width="102" height="14"/>
+					<textElement verticalAlignment="Top">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<text><![CDATA[WC Tax:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="client_heading" x="11" y="42" width="104" height="14"/>
+					<textElement verticalAlignment="Top">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<text><![CDATA[Car Liability Tax:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="client_heading" x="211" y="43" width="102" height="14"/>
+					<textElement verticalAlignment="Top">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<text><![CDATA[Unemployment:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="client_heading" x="211" y="28" width="102" height="14"/>
+					<textElement verticalAlignment="Top">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<text><![CDATA[FUTA Tax:]]></text>
+				</staticText>
+				<textField pattern="¤ #,##0.00" hyperlinkType="None">
+					<reportElement style="client_heading" x="115" y="14" width="77" height="14"/>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_ss}]]></textFieldExpression>
+				</textField>
+				<textField pattern="¤ #,##0.00" hyperlinkType="None">
+					<reportElement style="client_heading" x="115" y="29" width="77" height="14"/>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{liability_tax}]]></textFieldExpression>
+				</textField>
+				<textField pattern="¤ #,##0.00" hyperlinkType="None">
+					<reportElement style="client_heading" x="115" y="42" width="77" height="14"/>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_carliability}]]></textFieldExpression>
+				</textField>
+				<textField pattern="¤ #,##0.00" hyperlinkType="None">
+					<reportElement style="client_heading" x="313" y="14" width="77" height="14"/>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_wc}]]></textFieldExpression>
+				</textField>
+				<textField pattern="¤ #,##0.00" hyperlinkType="None">
+					<reportElement style="client_heading" x="313" y="28" width="77" height="14"/>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_futa}]]></textFieldExpression>
+				</textField>
+				<textField pattern="¤ #,##0.00" hyperlinkType="None">
+					<reportElement style="client_heading" x="313" y="43" width="77" height="14"/>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_unemployment}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="450" y="14" width="100" height="14"/>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<text><![CDATA[Regular Billing]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="450" y="28" width="100" height="14"/>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<text><![CDATA[Overtime Billing]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="450" y="42" width="100" height="14"/>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<text><![CDATA[Regular Payroll]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="450" y="56" width="100" height="14"/>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<text><![CDATA[Overtime Payroll]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="450" y="85" width="100" height="14"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Profit]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="211" y="63" width="100" height="14"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Tax Total:]]></text>
+				</staticText>
+				<textField pattern="¤ #,##0.00" hyperlinkType="None">
+					<reportElement style="client_heading" x="311" y="63" width="77" height="14"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_taxes}]]></textFieldExpression>
+				</textField>
+				<textField pattern="¤ #,##0.00" hyperlinkType="None">
+					<reportElement style="client_heading" x="560" y="14" width="77" height="14"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_bill}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="450" y="71" width="100" height="14"/>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<text><![CDATA[Taxes]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="client_heading" x="550" y="70" width="10" height="14"/>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font size="10"/>
+					</textElement>
+					<text><![CDATA[-]]></text>
+				</staticText>
+				<textField pattern="¤ #,##0.00" hyperlinkType="None">
+					<reportElement style="client_heading" x="560" y="71" width="67" height="14"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_taxes}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="1" y="8" width="801" height="1"/>
+					<graphicElement/>
+				</line>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band/>
+	</title>
+	<pageHeader>
+		<band height="24"/>
+	</pageHeader>
+	<columnHeader>
+		<band/>
+	</columnHeader>
+	<detail>
+		<band height="17">
+			<textField hyperlinkType="None">
+				<reportElement x="0" y="0" width="136" height="17"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ename}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="136" y="0" width="53" height="17"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{rate_code_name}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="189" y="0" width="60" height="17"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{reghrs} + " * " + java.text.NumberFormat.getCurrencyInstance().format($F{max_bill_amt}.doubleValue()) + " = "]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" hyperlinkType="None">
+				<reportElement x="363" y="0" width="54" height="17"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{paid_amount}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00 %" hyperlinkType="None">
+				<reportElement style="ratio_total" x="749" y="0" width="53" height="17"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{tot_ratio}.doubleValue() > 5.0 ? new BigDecimal(1) : $F{tot_ratio}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" hyperlinkType="None">
+				<reportElement x="530" y="0" width="54" height="17"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{bill_overtime_amount}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" hyperlinkType="None">
+				<reportElement x="644" y="0" width="54" height="17"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{overtime_amount}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00 %" hyperlinkType="None">
+				<reportElement style="ratio_paid" x="417" y="0" width="53" height="17"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{ratio}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00 %" hyperlinkType="None">
+				<reportElement style="ratio_over" mode="Transparent" x="696" y="0" width="53" height="17"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{overtimeratio}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" hyperlinkType="None">
+				<reportElement x="249" y="0" width="54" height="17"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{bill_amount}]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="303" y="0" width="60" height="17"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{reghrs} + " * " + java.text.NumberFormat.getCurrencyInstance().format($F{max_pay_amt}.doubleValue()) + " = "]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="470" y="0" width="60" height="17"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{overtimehrs} + " * " + java.text.NumberFormat.getCurrencyInstance().format($F{max_overtime_bill}.doubleValue()) + " = "]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="None">
+				<reportElement x="584" y="0" width="60" height="17"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{overtimehrs} + " * " + java.text.NumberFormat.getCurrencyInstance().format($F{max_overtime_amt}.doubleValue()) + " = "]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band/>
+	</pageFooter>
+	<summary>
+		<band height="28"/>
+	</summary>
+</jasperReport>

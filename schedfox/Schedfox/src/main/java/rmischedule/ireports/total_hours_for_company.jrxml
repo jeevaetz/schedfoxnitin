@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="total_hours_for_company" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="active_db" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="startDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2013-06-01"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="endDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2013-06-24"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+SUM(COALESCE(begdata.bill_amount, 0) + COALESCE(begdata.bill_overtime_amount, 0)) as beg_billamt,
+SUM(COALESCE(begdata.time_worked, 0.0)) as beg_time_worked,
+SUM(COALESCE(enddata.bill_amount, 0) + COALESCE(enddata.bill_overtime_amount, 0)) as end_billamt,
+SUM(COALESCE(enddata.time_worked, 0.0)) as end_time_worked,
+DATE(DATE_TRUNC('week', DATE($P{startDate}))) as firstDate,
+DATE(DATE_TRUNC('week', DATE($P{startDate})) + interval '6 days') as secondDate,
+DATE(DATE_TRUNC('week', DATE($P{endDate}))) as thirdDate,
+DATE(DATE_TRUNC('week', DATE($P{endDate})) + interval '6 days') as fourthDate
+FROM
+$P!{active_db}.client
+LEFT JOIN
+(SELECT * FROM champion_db.get_client_pay_amounts_with_train(DATE(DATE_TRUNC('week', DATE($P{startDate}))), DATE(DATE_TRUNC('week', DATE($P{startDate})) + interval '6 days'), -1, null)) as begdata ON begdata.cid = client.client_id
+LEFT JOIN
+(SELECT * FROM champion_db.get_client_pay_amounts_with_train(DATE(DATE_TRUNC('week', DATE($P{endDate}))), DATE(DATE_TRUNC('week', DATE($P{endDate})) + interval '6 days'), -1, null)) as enddata ON enddata.cid = client.client_id]]>
+	</queryString>
+	<field name="beg_billamt" class="java.math.BigDecimal"/>
+	<field name="beg_time_worked" class="java.math.BigDecimal"/>
+	<field name="end_billamt" class="java.math.BigDecimal"/>
+	<field name="end_time_worked" class="java.math.BigDecimal"/>
+	<field name="firstdate" class="java.sql.Date"/>
+	<field name="seconddate" class="java.sql.Date"/>
+	<field name="thirddate" class="java.sql.Date"/>
+	<field name="fourthdate" class="java.sql.Date"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="79" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="555" height="36"/>
+				<textElement>
+					<font size="18"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Comparing data between " + $P{startDate} + " to " + $P{endDate} ]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="61" splitType="Stretch">
+			<staticText>
+				<reportElement x="384" y="41" width="80" height="20"/>
+				<textElement/>
+				<text><![CDATA[Diff Hours]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="464" y="41" width="91" height="20"/>
+				<textElement/>
+				<text><![CDATA[Diff Billing]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="0" y="18" width="92" height="43"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Starting Hours \r\n" + new java.text.SimpleDateFormat("MM/dd").format($F{firstdate}) + " to " + new java.text.SimpleDateFormat("MM/dd").format($F{seconddate})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="92" y="18" width="92" height="43"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Starting Billing \r\n" + new java.text.SimpleDateFormat("MM/dd").format($F{firstdate}) + " to " + new java.text.SimpleDateFormat("MM/dd").format($F{seconddate})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="184" y="18" width="100" height="43"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Ending Hours \r\n" + new java.text.SimpleDateFormat("MM/dd").format($F{thirddate}) + " to " + new java.text.SimpleDateFormat("MM/dd").format($F{fourthdate})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="284" y="18" width="100" height="43"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Ending Billing \r\n" + new java.text.SimpleDateFormat("MM/dd").format($F{thirddate}) + " to " + new java.text.SimpleDateFormat("MM/dd").format($F{fourthdate})]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="0" y="0" width="92" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{beg_time_worked}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="92" y="0" width="92" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{beg_billamt}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="184" y="0" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{end_time_worked}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="284" y="0" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{end_billamt}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="384" y="0" width="80" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal($F{end_time_worked}.floatValue() - $F{beg_time_worked}.floatValue())]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="464" y="0" width="91" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal($F{end_billamt}.floatValue() - $F{beg_billamt}.floatValue())]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="45" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="54" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>

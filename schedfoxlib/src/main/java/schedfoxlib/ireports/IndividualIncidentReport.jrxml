@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="IndividualIncidentReport" columnCount="2" printOrder="Horizontal" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="277" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="225"/>
+	<parameter name="EmployeeImage" class="java.io.InputStream"/>
+	<parameter name="incidentDate" class="java.util.Date"/>
+	<parameter name="officerName" class="java.lang.String"/>
+	<parameter name="incidentType" class="java.lang.String"/>
+	<parameter name="incidentText" class="java.lang.String"/>
+	<parameter name="logo" class="java.io.InputStream"/>
+	<parameter name="dateFormatter" class="java.text.DateFormat">
+		<defaultValueExpression><![CDATA[$P{REPORT_FORMAT_FACTORY}.createDateFormat("MM/dd/yyyy HHmm", $P{REPORT_LOCALE}, $P{REPORT_TIME_ZONE})]]></defaultValueExpression>
+	</parameter>
+	<parameter name="clientName" class="java.lang.String"/>
+	<parameter name="incidentReportId" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="accuracy" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[accuracy]]></fieldDescription>
+	</field>
+	<field name="class" class="java.lang.Class">
+		<fieldDescription><![CDATA[class]]></fieldDescription>
+	</field>
+	<field name="documentData" class="java.lang.Object">
+		<fieldDescription><![CDATA[documentData]]></fieldDescription>
+	</field>
+	<field name="employeeId" class="java.lang.Integer">
+		<fieldDescription><![CDATA[employeeId]]></fieldDescription>
+	</field>
+	<field name="incidentReportDocumentId" class="java.lang.Integer">
+		<fieldDescription><![CDATA[incidentReportDocumentId]]></fieldDescription>
+	</field>
+	<field name="incidentReportId" class="java.lang.Integer">
+		<fieldDescription><![CDATA[incidentReportId]]></fieldDescription>
+	</field>
+	<field name="latitude" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[latitude]]></fieldDescription>
+	</field>
+	<field name="longitude" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[longitude]]></fieldDescription>
+	</field>
+	<field name="mimeType" class="java.lang.String">
+		<fieldDescription><![CDATA[mimeType]]></fieldDescription>
+	</field>
+	<field name="recordedOn" class="java.util.Date">
+		<fieldDescription><![CDATA[recordedOn]]></fieldDescription>
+	</field>
+	<field name="thumbnailData" class="java.lang.Object">
+		<fieldDescription><![CDATA[thumbnailData]]></fieldDescription>
+	</field>
+	<field name="mapURL" class="java.lang.String">
+		<fieldDescription><![CDATA[mapURL]]></fieldDescription>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="346" splitType="Stretch">
+			<image hAlign="Center" vAlign="Middle">
+				<reportElement x="0" y="127" width="223" height="218"/>
+				<imageExpression class="java.io.InputStream"><![CDATA[$P{EmployeeImage}]]></imageExpression>
+			</image>
+			<textField>
+				<reportElement x="224" y="95" width="331" height="32"/>
+				<box leftPadding="5"/>
+				<textElement textAlignment="Left">
+					<font size="16" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{incidentNum} + $P{incidentReportId} + $R{on} + $P{dateFormatter}.format($P{incidentDate})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="96" width="224" height="31"/>
+				<textElement textAlignment="Center">
+					<font size="16" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{officerName}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="338" y="127" width="217" height="28"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{incidentType} == null ? "Not Set" : $P{incidentType}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="338" y="155" width="217" height="190"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{incidentText}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="95" width="555" height="1"/>
+			</line>
+			<line>
+				<reportElement stretchType="RelativeToTallestObject" x="223" y="96" width="1" height="249"/>
+			</line>
+			<line>
+				<reportElement positionType="FixRelativeToBottom" x="0" y="345" width="555" height="1"/>
+			</line>
+			<image hAlign="Center">
+				<reportElement x="1" y="0" width="555" height="64"/>
+				<imageExpression class="java.io.InputStream"><![CDATA[$P{logo}]]></imageExpression>
+			</image>
+			<line>
+				<reportElement stretchType="RelativeToTallestObject" x="555" y="96" width="1" height="249"/>
+			</line>
+			<line>
+				<reportElement stretchType="RelativeToTallestObject" x="0" y="95" width="1" height="250"/>
+			</line>
+			<line>
+				<reportElement x="1" y="127" width="555" height="1"/>
+			</line>
+			<textField>
+				<reportElement x="0" y="64" width="555" height="32"/>
+				<box leftPadding="5"/>
+				<textElement textAlignment="Left">
+					<font size="20" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{incidentAt} + $P{clientName}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="234" y="155" width="104" height="28"/>
+				<textElement>
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{incidentText}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="234" y="128" width="104" height="27"/>
+				<textElement>
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{incidentType}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="23" splitType="Stretch">
+			<textField>
+				<reportElement x="1" y="0" width="554" height="23"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="16" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{images}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="136" splitType="Stretch">
+			<rectangle>
+				<reportElement x="1" y="0" width="276" height="134"/>
+			</rectangle>
+			<image scaleImage="RetainShape" hAlign="Center">
+				<reportElement mode="Opaque" x="6" y="12" width="124" height="111"/>
+				<imageExpression class="java.io.InputStream"><![CDATA[new java.io.ByteArrayInputStream((byte[])$F{documentData})]]></imageExpression>
+			</image>
+			<image scaleImage="RetainShape" hAlign="Center">
+				<reportElement mode="Opaque" x="146" y="12" width="124" height="111"/>
+				<imageExpression class="java.net.URL"><![CDATA[new URL($F{mapURL})]]></imageExpression>
+			</image>
+			<line>
+				<reportElement x="138" y="0" width="1" height="134"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="0" y="0" width="555" height="1"/>
+			</line>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

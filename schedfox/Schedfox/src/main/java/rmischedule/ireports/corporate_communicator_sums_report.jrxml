@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="corporate_communicator_sums_report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="schema" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="start_date" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2011-05-01"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="end_date" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2011-05-31"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="dm_ints" class="java.util.List"/>
+	<queryString>
+		<![CDATA[SELECT user_first_name, user_last_name,
+(CASE WHEN branch.branch_name IS NULL THEN 'No Corporate Communicators!' ELSE branch.branch_name END) as branch_name,
+SUM((CASE WHEN ps_id IS NULL THEN 0 ELSE 1 END)) as count,
+MIN(ps_date) as min_date, MAX(ps_date) as max_date, DATE(DATE_TRUNC('WEEK', ps_date)) AS sdate
+FROM
+control_db."user"
+INNER JOIN control_db.user_groups ON user_groups.user_id = "user".user_id AND user_groups.groups_id = 11
+INNER JOIN control_db.company ON control_db.company.company_db = $P{schema} AND company.company_management_id = "user".user_management_id
+LEFT JOIN $P!{schema}.problemsolver ON "user".user_id = problemsolver.user_id AND DATE(ps_date) BETWEEN DATE($P{start_date}) AND DATE($P{end_date})
+LEFT JOIN $P!{schema}.client ON client.client_id = problemsolver.client_id
+LEFT JOIN control_db.branch ON branch.branch_id = client.branch_id
+WHERE
+user_is_deleted != 1 AND ($X{IN, "user".user_id, dm_ints} OR $X{IN, -1, dm_ints})
+GROUP BY DATE(DATE_TRUNC('WEEK', ps_date)), user_first_name, user_last_name, branch_name
+ORDER BY DATE(DATE_TRUNC('WEEK', ps_date)), user_first_name, user_last_name, branch_name
+]]>
+	</queryString>
+	<field name="user_first_name" class="java.lang.String"/>
+	<field name="user_last_name" class="java.lang.String"/>
+	<field name="branch_name" class="java.lang.String"/>
+	<field name="count" class="java.lang.Long"/>
+	<field name="min_date" class="java.sql.Timestamp"/>
+	<field name="max_date" class="java.sql.Timestamp"/>
+	<field name="sdate" class="java.sql.Date"/>
+	<variable name="total_count" class="java.lang.Long" resetType="Group" resetGroup="dateGrp" calculation="Sum">
+		<variableExpression><![CDATA[$F{count}]]></variableExpression>
+	</variable>
+	<group name="dateGrp">
+		<groupExpression><![CDATA[new SimpleDateFormat("MM/dd/yyyy").format($F{sdate})]]></groupExpression>
+		<groupHeader>
+			<band height="50" splitType="Stretch">
+				<staticText>
+					<reportElement x="0" y="30" width="199" height="20"/>
+					<textElement>
+						<font size="14" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Employee Name]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="287" y="30" width="73" height="20"/>
+					<textElement>
+						<font size="14" isBold="true"/>
+					</textElement>
+					<text><![CDATA[CC Count]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="360" y="30" width="100" height="20"/>
+					<textElement>
+						<font size="14" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Date of First]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="460" y="30" width="95" height="20"/>
+					<textElement>
+						<font size="14" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Date of Last]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="199" y="30" width="88" height="20"/>
+					<textElement>
+						<font size="14" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Branch]]></text>
+				</staticText>
+				<textField isBlankWhenNull="true">
+					<reportElement x="0" y="0" width="473" height="30"/>
+					<textElement>
+						<font size="16" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Week of " + new SimpleDateFormat("MM/dd/yyyy").format($F{sdate})]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="25" splitType="Stretch">
+				<staticText>
+					<reportElement x="0" y="0" width="211" height="20"/>
+					<textElement>
+						<font size="14" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Total Date Count]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="287" y="0" width="73" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$V{total_count}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="35" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="1" width="555" height="34"/>
+				<textElement>
+					<font size="24"/>
+				</textElement>
+				<text><![CDATA[Corporate Communicator Usage Report]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="199" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{user_first_name} + " " + $F{user_last_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="287" y="0" width="73" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{count}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/dd/yyyy">
+				<reportElement x="360" y="0" width="100" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{min_date}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/dd/yyyy">
+				<reportElement x="460" y="0" width="95" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{max_date}]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement x="199" y="0" width="88" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{branch_name}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

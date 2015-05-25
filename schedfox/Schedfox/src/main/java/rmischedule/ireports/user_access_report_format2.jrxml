@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="user_access_report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="style1">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue() % 2 == 0)]]></conditionExpression>
+			<style backcolor="#CCCCCC"/>
+		</conditionalStyle>
+	</style>
+	<queryString>
+		<![CDATA[SELECT
+"user".*, control_db.get_branch_access_for_user("user".user_id) as mydata, control_db.get_group_access_for_user("user".user_id) as group_data
+FROM
+control_db.user
+INNER JOIN control_db.management_clients ON management_clients.management_id = "user".user_management_id
+INNER JOIN control_db.company ON company.company_management_id = management_clients.management_id
+WHERE
+company.company_id = 2 AND "user".user_is_deleted != 1
+ORDER BY user_first_name, user_last_name]]>
+	</queryString>
+	<field name="user_id" class="java.lang.Integer"/>
+	<field name="user_md5" class="java.lang.String"/>
+	<field name="user_login" class="java.lang.String"/>
+	<field name="user_password" class="java.lang.String"/>
+	<field name="user_first_name" class="java.lang.String"/>
+	<field name="user_last_name" class="java.lang.String"/>
+	<field name="user_middle_initial" class="java.lang.String"/>
+	<field name="user_is_deleted" class="java.lang.Integer"/>
+	<field name="user_management_id" class="java.lang.Integer"/>
+	<field name="user_email" class="java.lang.String"/>
+	<field name="email_password" class="java.lang.String"/>
+	<field name="can_view_ssn" class="java.lang.Boolean"/>
+	<field name="mydata" class="java.lang.String"/>
+	<field name="group_data" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="47" splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="28" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="2" width="129" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{user_first_name} + " " + $F{user_last_name}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="129" y="2" width="426" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{mydata}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="555" y="2" width="247" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{group_data}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

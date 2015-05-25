@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="EmployeeCheckTaxes" pageWidth="240" pageHeight="440" columnWidth="240" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="employee_payment_id" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[263746]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+*,
+(CASE WHEN tax_type = 'MC' THEN 'Medicare'
+      WHEN tax_type = 'SS' THEN 'Social Security'
+      WHEN tax_type = 'FE' THEN 'Federal'
+      WHEN tax_type = 'ST' THEN 'State'
+      WHEN tax_type = 'FU' THEN 'Federal Unemployment'
+      WHEN tax_type = 'SU' THEN 'State Unemployment'
+      WHEN tax_type = 'WE' THEN 'Workers Compensation'
+END) as label
+FROM
+champion_db.employee_payment_taxes
+WHERE
+employee_payment_id = $P{employee_payment_id}]]>
+	</queryString>
+	<field name="employee_payment_tax_id" class="java.lang.Integer"/>
+	<field name="employee_payment_id" class="java.lang.Integer"/>
+	<field name="tax_type" class="java.lang.String"/>
+	<field name="code" class="java.lang.String"/>
+	<field name="taxable_amount" class="java.math.BigDecimal"/>
+	<field name="exempt_amount" class="java.math.BigDecimal"/>
+	<field name="li_amount" class="java.math.BigDecimal"/>
+	<field name="de_amount" class="java.math.BigDecimal"/>
+	<field name="label" class="java.lang.String"/>
+	<variable name="tax" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{de_amount}]]></variableExpression>
+	</variable>
+	<variable name="total_tax" class="java.math.BigDecimal" resetType="None">
+		<variableExpression><![CDATA[$V{tax}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="160" height="20"/>
+				<textElement>
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{label}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="160" y="0" width="80" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{de_amount}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

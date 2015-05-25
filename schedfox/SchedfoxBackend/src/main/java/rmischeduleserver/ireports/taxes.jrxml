@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="taxes" pageWidth="180" pageHeight="110" columnWidth="180" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="schema" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="payment_id" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[294739]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT * FROM
+$P!{schema}.employee_payment_taxes
+LEFT JOIN $P!{schema}.tax_types ON tax_types.tax_usked_id = employee_payment_taxes.tax_type
+WHERE
+employee_payment_id = $P{payment_id}]]>
+	</queryString>
+	<field name="employee_payment_tax_id" class="java.lang.Integer"/>
+	<field name="employee_payment_id" class="java.lang.Integer"/>
+	<field name="tax_type" class="java.lang.String"/>
+	<field name="code" class="java.lang.String"/>
+	<field name="taxable_amount" class="java.math.BigDecimal"/>
+	<field name="exempt_amount" class="java.math.BigDecimal"/>
+	<field name="li_amount" class="java.math.BigDecimal"/>
+	<field name="de_amount" class="java.math.BigDecimal"/>
+	<field name="tax_type_id" class="java.lang.Integer"/>
+	<field name="tax_name" class="java.lang.String"/>
+	<field name="tax_rate" class="java.math.BigDecimal"/>
+	<field name="tax_region_id" class="java.lang.Integer"/>
+	<field name="tax_usked_id" class="java.lang.String"/>
+	<variable name="total_taxes" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{de_amount}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="20" splitType="Stretch">
+			<staticText>
+				<reportElement x="111" y="0" width="69" height="20"/>
+				<textElement/>
+				<text><![CDATA[Amount]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="0" width="111" height="20"/>
+				<textElement/>
+				<text><![CDATA[Tax Type]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="21" splitType="Stretch">
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="111" y="0" width="69" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{de_amount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="0" width="111" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{tax_name}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="20" splitType="Stretch">
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="111" y="0" width="69" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_taxes}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="0" width="111" height="20"/>
+				<textElement/>
+				<text><![CDATA[Total Taxes]]></text>
+			</staticText>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

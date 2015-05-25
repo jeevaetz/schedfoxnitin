@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="personnel_change_form" pageWidth="842" pageHeight="800" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="110"/>
+	<parameter name="client_name" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Champion Distribution Company"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="employee_name" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Rich Harris"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="reason" class="java.lang.String"/>
+	<parameter name="additional_comments" class="java.lang.String"/>
+	<parameter name="date" class="java.lang.String">
+		<defaultValueExpression><![CDATA["02/19/2013"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="image_url" class="java.net.URL"/>
+	<parameter name="dm_name" class="java.lang.String">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="dm_phone" class="java.lang.String"/>
+	<parameter name="dm_email" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="80" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="802" height="80"/>
+				<textElement>
+					<font size="44"/>
+				</textElement>
+				<text><![CDATA[Personnel Change Notification Form]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="595" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="14" width="802" height="45" forecolor="#003399"/>
+				<textElement>
+					<font size="32"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{client_name}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="69" width="162" height="32" forecolor="#003399"/>
+				<textElement>
+					<font size="24" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Date:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="101" width="162" height="32" forecolor="#003399"/>
+				<textElement>
+					<font size="24" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Purpose:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="162" y="101" width="640" height="64"/>
+				<textElement>
+					<font size="22"/>
+				</textElement>
+				<text><![CDATA[This is being sent to you to keep you informed of personnel decisions at your account.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="165" width="162" height="32" forecolor="#003399"/>
+				<textElement>
+					<font size="24" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Employee:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="162" y="165" width="391" height="32"/>
+				<textElement>
+					<font size="22"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{employee_name}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="197" width="270" height="32" forecolor="#003399"/>
+				<textElement>
+					<font size="24" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Reason for Removal:]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="0" y="229" width="553" height="91"/>
+				<textElement>
+					<font size="22"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{reason}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="320" width="270" height="32" forecolor="#003399">
+					<printWhenExpression><![CDATA[new Boolean($P{additional_comments} != null && $P{additional_comments}.length() > 0)]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font size="24" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Additional Comments:]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="0" y="352" width="553" height="110"/>
+				<textElement>
+					<font size="22"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{additional_comments}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="2" y="462" width="767" height="32"/>
+				<textElement>
+					<font size="22"/>
+				</textElement>
+				<text><![CDATA[Thank you,]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="162" y="69" width="123" height="32"/>
+				<textElement>
+					<font size="22"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="2" y="494" width="767" height="34"/>
+				<textElement>
+					<font size="22"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{dm_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="2" y="528" width="767" height="34"/>
+				<textElement>
+					<font size="22"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{dm_phone}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="2" y="561" width="767" height="34"/>
+				<textElement>
+					<font size="22"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{dm_email}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

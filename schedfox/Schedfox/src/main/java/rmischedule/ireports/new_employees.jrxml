@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="new_employees" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="active_db" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT employee.*, branch_name FROM
+$P!{active_db}.employee
+INNER JOIN control_db.branch ON branch.branch_id = employee.branch_id
+WHERE
+employee_hire_date BETWEEN DATE(NOW() - interval '1 week') AND DATE(NOW())
+ORDER BY branch_name, employee_first_name, employee_last_name]]>
+	</queryString>
+	<field name="employee_id" class="java.lang.Integer"/>
+	<field name="branch_id" class="java.lang.Integer"/>
+	<field name="employee_first_name" class="java.lang.String"/>
+	<field name="employee_last_name" class="java.lang.String"/>
+	<field name="employee_middle_initial" class="java.lang.String"/>
+	<field name="employee_ssn" class="java.lang.String"/>
+	<field name="employee_address" class="java.lang.String"/>
+	<field name="employee_address2" class="java.lang.String"/>
+	<field name="employee_city" class="java.lang.String"/>
+	<field name="employee_state" class="java.lang.String"/>
+	<field name="employee_zip" class="java.lang.String"/>
+	<field name="employee_phone" class="java.lang.String"/>
+	<field name="employee_phone2" class="java.lang.String"/>
+	<field name="employee_cell" class="java.lang.String"/>
+	<field name="employee_pager" class="java.lang.String"/>
+	<field name="employee_email" class="java.lang.String"/>
+	<field name="employee_hire_date" class="java.sql.Date"/>
+	<field name="employee_term_date" class="java.sql.Date"/>
+	<field name="employee_is_deleted" class="java.lang.Integer"/>
+	<field name="employee_last_updated" class="java.sql.Timestamp"/>
+	<field name="employee_type" class="java.lang.Integer"/>
+	<field name="web_login" class="java.lang.String"/>
+	<field name="web_pw" class="java.lang.String"/>
+	<field name="employee_birthdate" class="java.sql.Date"/>
+	<field name="employee_login" class="java.lang.String"/>
+	<field name="employee_password" class="java.lang.String"/>
+	<field name="is_login_available" class="java.lang.Boolean"/>
+	<field name="employee_type_id" class="java.lang.Integer"/>
+	<field name="employee_email2" class="java.lang.String"/>
+	<field name="email_messaging" class="java.lang.String"/>
+	<field name="sms_messaging" class="java.lang.Boolean"/>
+	<field name="employee_workhrs_pweek" class="java.lang.Integer"/>
+	<field name="accrued_vacation" class="java.lang.Integer"/>
+	<field name="mark_invisible" class="java.lang.Boolean"/>
+	<field name="gender" class="java.lang.Integer"/>
+	<field name="race" class="java.lang.Integer"/>
+	<field name="phone_contact" class="java.lang.Integer"/>
+	<field name="phone2_contact" class="java.lang.Integer"/>
+	<field name="cell_contact" class="java.lang.Integer"/>
+	<field name="email_contact" class="java.lang.Integer"/>
+	<field name="alt_email_contact" class="java.lang.Integer"/>
+	<field name="employee_deleted_on" class="java.sql.Timestamp"/>
+	<field name="branch_name" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="79" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="555" height="44"/>
+				<textElement>
+					<font size="32"/>
+				</textElement>
+				<text><![CDATA[New Employees Report]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="22" splitType="Stretch">
+			<staticText>
+				<reportElement x="100" y="2" width="76" height="20"/>
+				<textElement/>
+				<text><![CDATA[First Name]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="176" y="2" width="73" height="20"/>
+				<textElement/>
+				<text><![CDATA[Last Name]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="249" y="2" width="57" height="20"/>
+				<textElement/>
+				<text><![CDATA[Date of Hire]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="2" width="100" height="20"/>
+				<textElement/>
+				<text><![CDATA[Branch]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="306" y="2" width="164" height="20"/>
+				<textElement/>
+				<text><![CDATA[Address]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="470" y="2" width="85" height="20"/>
+				<textElement/>
+				<text><![CDATA[Phone Number]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="21" splitType="Stretch">
+			<textField>
+				<reportElement x="100" y="0" width="76" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{employee_first_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="176" y="1" width="73" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{employee_last_name}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/dd/yyyy">
+				<reportElement x="249" y="0" width="57" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{employee_hire_date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="0" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{branch_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="306" y="0" width="164" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{employee_address} + "," + $F{employee_city} + ", " + $F{employee_state} + " " + $F{employee_zip}]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement x="470" y="0" width="85" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{employee_phone}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="40" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="1.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd">
+  <persistence-unit name="RMIScheduleServerPU" transaction-type="RESOURCE_LOCAL">
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    <class>schedfoxlib.model.BranchInfo</class>
+    <class>schedfoxlib.model.Branch</class>
+    <class>schedfoxlib.model.ClientContactType</class>
+    <class>schedfoxlib.model.ClientContact</class>
+    <class>schedfoxlib.model.Problemsolver</class>
+    <class>schedfoxlib.model.ProblemsolverTemplate</class>
+    <class>schedfoxlib.model.Certifications</class>
+    <class>schedfoxlib.model.CompanyView</class>
+    <class>schedfoxlib.model.Checkin</class>
+    <class>schedfoxlib.model.Schedule</class>
+    <class>schedfoxlib.model.ScheduleMaster</class>
+    <class>schedfoxlib.model.ProblemSolverContacts</class>
+    <class>schedfoxlib.model.CommunicationSource</class>
+    <class>schedfoxlib.model.CommunicationTransaction</class>
+    <class>schedfoxlib.model.ClientPhoneCalls</class>
+    <class>schedfoxlib.model.ClientPhoneCallsToProblemSolver</class>
+    <class>schedfoxlib.model.ClientBillFrequency</class>
+    <class>schedfoxlib.model.ClientRateCode</class>
+    <class>schedfoxlib.model.RateCode</class>
+    <class>schedfoxlib.model.SalesTax</class>
+    <class>schedfoxlib.model.ClientBilling</class>
+    <class>schedfoxlib.model.EmployeePayments</class>
+    <class>schedfoxlib.model.EmployeePaymentHours</class>
+    <class>schedfoxlib.model.EmployeePaymentDeduction</class>
+    <class>schedfoxlib.model.EmployeePaymentTaxes</class>
+    <class>schedfoxlib.model.EmployeeDeductions</class>
+    <class>schedfoxlib.model.EmployeeAccounts</class>
+    <class>schedfoxlib.model.EmployeeWageTypes</class>
+    <class>schedfoxlib.model.EmployeeDeductionTypes</class>
+    <class>schedfoxlib.model.EmployeeWages</class>
+    <class>schedfoxlib.model.TaxTypes</class>
+    <class>schedfoxlib.model.EmployeeTax</class>
+    <class>schedfoxlib.model.TaxRegion</class>
+    <class>schedfoxlib.model.CheckOutOptions</class>
+    <class>schedfoxlib.model.EmployeeEquipment</class>
+    <class>schedfoxlib.model.Equipment</class>
+    <class>schedfoxlib.model.EmployeeNotes</class>
+    <class>schedfoxlib.model.TimeOffType</class>
+    <class>schedfoxlib.model.TimeOffAccrual</class>
+    <class>schedfoxlib.model.TimeOffSeries</class>
+    <class>schedfoxlib.model.Availability</class>
+    <class>schedfoxlib.model.EmployeeTypes</class>
+    <class>schedfoxlib.model.TimeOffAdjustment</class>
+    <class>schedfoxlib.model.ClientNotes</class>
+    <class>schedfoxlib.model.ClientCheckinContact</class>
+    <class>schedfoxlib.model.ClientContract</class>
+    <class>schedfoxlib.model.AvailabilityMaster</class>
+    <class>schedfoxlib.model.ClientRateTemplates</class>
+    <class>schedfoxlib.model.AvailabilityNotes</class>
+    <properties>
+      <property name="eclipselink.jdbc.password" value="gate8844"/>
+      <property name="eclipselink.jdbc.user" value="dbuser"/>
+      <property name="eclipselink.jdbc.driver" value="org.postgresql.Driver"/>
+      <property name="eclipselink.jdbc.url" value="jdbc:postgresql://schedfoxdb.schedfox.com:5432/unique_manage"/>
+    </properties>
+  </persistence-unit>
+</persistence>

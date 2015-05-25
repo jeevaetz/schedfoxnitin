@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OfficerDailyReportText" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="3.0"/>
+	<property name="ireport.x" value="658"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="dateFormatter" class="java.text.DateFormat">
+		<defaultValueExpression><![CDATA[$P{REPORT_FORMAT_FACTORY}.createDateFormat("MM/dd/yyyy HHmm", $P{REPORT_LOCALE}, $P{REPORT_TIME_ZONE})]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="dateEntered" class="java.util.Date">
+		<fieldDescription><![CDATA[dateEntered]]></fieldDescription>
+	</field>
+	<field name="enteredBy" class="java.lang.Integer">
+		<fieldDescription><![CDATA[enteredBy]]></fieldDescription>
+	</field>
+	<field name="enteredOn" class="java.util.Date">
+		<fieldDescription><![CDATA[enteredOn]]></fieldDescription>
+	</field>
+	<field name="id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[id]]></fieldDescription>
+	</field>
+	<field name="imageCount" class="java.lang.Integer">
+		<fieldDescription><![CDATA[imageCount]]></fieldDescription>
+	</field>
+	<field name="officerDailyReportId" class="java.lang.Integer">
+		<fieldDescription><![CDATA[officerDailyReportId]]></fieldDescription>
+	</field>
+	<field name="officerDailyReportTextId" class="java.lang.Integer">
+		<fieldDescription><![CDATA[officerDailyReportTextId]]></fieldDescription>
+	</field>
+	<field name="text" class="java.lang.String">
+		<fieldDescription><![CDATA[text]]></fieldDescription>
+	</field>
+	<field name="type" class="java.lang.String">
+		<fieldDescription><![CDATA[type]]></fieldDescription>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="60" splitType="Immediate">
+			<textField>
+				<reportElement x="11" y="10" width="100" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{entryTime}]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement x="111" y="10" width="433" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{dateFormatter}.format($F{dateEntered})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="111" y="30" width="433" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{text}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="11" y="30" width="100" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{text}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="0" width="1" height="60"/>
+			</line>
+			<line>
+				<reportElement x="555" y="0" width="1" height="60"/>
+			</line>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="2" splitType="Stretch">
+			<line>
+				<reportElement x="1" y="0" width="554" height="1"/>
+			</line>
+		</band>
+	</summary>
+</jasperReport>

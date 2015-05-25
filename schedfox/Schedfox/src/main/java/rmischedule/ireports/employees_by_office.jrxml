@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD JasperReport//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="employees_by_office" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<style name="Crosstab Data Text" isDefault="false" hAlign="Center"/>
+	<parameter name="schema" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="start_date" class="java.lang.String">
+		<defaultValueExpression><![CDATA[new String("03/01/2011")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="end_date" class="java.lang.String">
+		<defaultValueExpression><![CDATA[new String("05/01/2011")]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT info.*  FROM
+(
+	SELECT DATE(date_trunc('week', doy)) as my_date FROM generate_date_series(DATE($P{start_date}), DATE($P{end_date}))
+	GROUP BY DATE(date_trunc('week', doy))
+	ORDER BY DATE(date_trunc('week', doy))
+) AS mydates
+LEFT JOIN
+(
+(
+	SELECT my_date, branch_name, count(*), 'Active Emps' AS header  FROM
+	(
+		SELECT DATE(date_trunc('week', doy)) as my_date
+		FROM generate_date_series(DATE($P{start_date}), DATE($P{end_date}))
+		GROUP BY DATE(date_trunc('week', doy))
+		ORDER BY DATE(date_trunc('week', doy))
+	) as week_dates
+	INNER JOIN control_db.branch ON 1 = 1
+	INNER JOIN employee ON my_date + interval '7 day' BETWEEN employee.employee_hire_date AND employee.employee_term_date AND branch.branch_id = employee.branch_id
+	WHERE employee.employee_is_deleted <> 1
+	GROUP BY my_date, branch.branch_name
+	ORDER BY my_date, branch_name
+)
+UNION
+(
+	SELECT my_date as my_date2, branch_name, COUNT(*), 'Working Emps' AS header
+	FROM
+	(
+		SELECT my_date, branch_name, eid FROM
+		(
+			SELECT DATE(date_trunc('week', doy)) as my_date
+			FROM generate_date_series(DATE($P{start_date}), DATE($P{end_date}))
+			GROUP BY DATE(date_trunc('week', doy))
+			ORDER BY DATE(date_trunc('week', doy))
+		) as week_dates
+		LEFT JOIN assemble_schedule(DATE($P{start_date}), DATE($P{end_date}), -1, -1) AS sched ON date_trunc('week', sched."date") = my_date
+		INNER JOIN control_db.branch ON 1 = 1
+		LEFT JOIN employee ON sched.eid = employee.employee_id AND branch.branch_id = employee.branch_id
+		WHERE employee.employee_is_deleted <> 1
+		GROUP BY my_date, branch.branch_name, eid
+		ORDER BY my_date, branch_name
+	) AS sched_data
+	GROUP BY my_date, branch_name
+	ORDER BY my_date, branch_name
+)
+) as info
+ON mydates.my_date = info.my_date
+ORDER BY info.my_date, info.branch_name]]>
+	</queryString>
+	<field name="my_date" class="java.sql.Date">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="branch_name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="count" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="header" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<group name="schema">
+		<groupExpression><![CDATA[$P{schema}]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band height="254">
+				<crosstab>
+					<reportElement x="0" y="0" width="555" height="254"/>
+					<rowGroup name="branch_name" width="70" totalPosition="End">
+						<bucket>
+							<bucketExpression class="java.lang.String"><![CDATA[$F{branch_name}]]></bucketExpression>
+						</bucket>
+						<crosstabRowHeader>
+							<cellContents backcolor="#F0F8FF" mode="Opaque">
+								<box border="Thin" borderColor="#000000"/>
+								<textField>
+									<reportElement style="Crosstab Data Text" x="0" y="0" width="70" height="25"/>
+									<textElement/>
+									<textFieldExpression class="java.lang.String"><![CDATA[$V{branch_name}]]></textFieldExpression>
+								</textField>
+							</cellContents>
+						</crosstabRowHeader>
+						<crosstabTotalRowHeader>
+							<cellContents backcolor="#BFE1FF" mode="Opaque">
+								<box border="Thin" borderColor="#000000"/>
+								<staticText>
+									<reportElement x="0" y="0" width="70" height="25"/>
+									<textElement textAlignment="Center" verticalAlignment="Middle"/>
+									<text><![CDATA[Total branch_name]]></text>
+								</staticText>
+							</cellContents>
+						</crosstabTotalRowHeader>
+					</rowGroup>
+					<columnGroup name="my_date" height="30">
+						<bucket>
+							<bucketExpression class="java.sql.Date"><![CDATA[$F{my_date}]]></bucketExpression>
+						</bucket>
+						<crosstabColumnHeader>
+							<cellContents backcolor="#F0F8FF" mode="Opaque">
+								<box border="Thin" borderColor="#000000"/>
+								<textField isStretchWithOverflow="true" pattern="MM/dd/yy">
+									<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="30"/>
+									<textElement verticalAlignment="Middle"/>
+									<textFieldExpression class="java.util.Date"><![CDATA[$V{my_date}]]></textFieldExpression>
+								</textField>
+							</cellContents>
+						</crosstabColumnHeader>
+						<crosstabTotalColumnHeader>
+							<cellContents/>
+						</crosstabTotalColumnHeader>
+					</columnGroup>
+					<columnGroup name="header" height="30">
+						<bucket>
+							<bucketExpression class="java.lang.String"><![CDATA[$F{header}]]></bucketExpression>
+						</bucket>
+						<crosstabColumnHeader>
+							<cellContents backcolor="#F0F8FF" mode="Opaque">
+								<box border="Thin" borderColor="#000000"/>
+								<textField>
+									<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="30"/>
+									<textElement/>
+									<textFieldExpression class="java.lang.String"><![CDATA[$V{header}]]></textFieldExpression>
+								</textField>
+							</cellContents>
+						</crosstabColumnHeader>
+						<crosstabTotalColumnHeader>
+							<cellContents/>
+						</crosstabTotalColumnHeader>
+					</columnGroup>
+					<measure name="countMeasure" class="java.lang.Long" calculation="Sum">
+						<measureExpression><![CDATA[$F{count}]]></measureExpression>
+					</measure>
+					<crosstabCell width="50" height="25">
+						<cellContents>
+							<box border="Thin" borderColor="#000000"/>
+							<textField>
+								<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="25"/>
+								<textElement/>
+								<textFieldExpression class="java.lang.Long"><![CDATA[$V{countMeasure}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell height="25" rowTotalGroup="branch_name">
+						<cellContents backcolor="#BFE1FF" mode="Opaque">
+							<box border="Thin" borderColor="#000000"/>
+							<textField>
+								<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="25"/>
+								<textElement/>
+								<textFieldExpression class="java.lang.Long"><![CDATA[$V{countMeasure}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="50" columnTotalGroup="my_date">
+						<cellContents backcolor="#005FB3" mode="Opaque">
+							<box border="Thin" borderColor="#000000"/>
+							<textField>
+								<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="25" forecolor="#FFFFFF"/>
+								<textElement/>
+								<textFieldExpression class="java.lang.Long"><![CDATA[$V{countMeasure}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell rowTotalGroup="branch_name" columnTotalGroup="my_date">
+						<cellContents backcolor="#005FB3" mode="Opaque">
+							<box border="Thin" borderColor="#000000"/>
+							<textField>
+								<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="25" forecolor="#FFFFFF"/>
+								<textElement/>
+								<textFieldExpression class="java.lang.Long"><![CDATA[$V{countMeasure}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="50" columnTotalGroup="header">
+						<cellContents backcolor="#BFE1FF" mode="Opaque">
+							<box border="Thin" borderColor="#000000"/>
+							<textField>
+								<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="25"/>
+								<textElement/>
+								<textFieldExpression class="java.lang.Long"><![CDATA[$V{countMeasure}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell rowTotalGroup="branch_name" columnTotalGroup="header">
+						<cellContents backcolor="#BFE1FF" mode="Opaque">
+							<box border="Thin" borderColor="#000000"/>
+							<textField>
+								<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="25"/>
+								<textElement/>
+								<textFieldExpression class="java.lang.Long"><![CDATA[$V{countMeasure}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+				</crosstab>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="37">
+			<staticText>
+				<reportElement x="0" y="0" width="555" height="33"/>
+				<textElement>
+					<font size="24"/>
+				</textElement>
+				<text><![CDATA[Active Employees by Branch]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<columnHeader>
+		<band/>
+	</columnHeader>
+	<detail>
+		<band/>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band height="23">
+			<textField pattern="EEEEE dd MMMMM yyyy" hyperlinkType="None">
+				<reportElement x="0" y="0" width="113" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band/>
+	</summary>
+</jasperReport>

@@ -1,0 +1,341 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/*
+ * MessagingSubForm.java
+ *
+ * Created on Jul 23, 2010, 10:13:51 AM
+ */
+package rmischedule.messaging.components;
+
+import java.awt.CardLayout;
+import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JPanel;
+import rmischedule.components.graphicalcomponents.GenericEditSubForm;
+import rmischedule.data_connection.Connection;
+import rmischedule.main.Main_Window;
+import rmischedule.messaging.datacomponents.MessagingFilterType;
+import rmischedule.messaging.xMessagingEdit;
+import rmischedule.schedule.components.availability.Messaging_Availability;
+import rmischedule.security.security_detail;
+import schedfoxlib.model.util.Record_Set;
+import rmischeduleserver.mysqlconnectivity.queries.GeneralQueryFormat;
+import rmischeduleserver.mysqlconnectivity.queries.util.GenericQuery;
+
+/**
+ *
+ * @author user
+ */
+public class MessagingSubForm extends GenericEditSubForm {
+
+    private xMessagingEdit myParent;
+    private Text_Messaging textMessaging;
+    private Email_Messaging emailMessaging;
+    public static String SMS_MESSAGING = "SMS Messaging";
+    public static String EMAIL_MESSAGING = "Email Messaging";
+    private ArrayList<MessagingFilterType> filterTypes;
+
+    /**
+     * Creates new form MessagingSubForm
+     */
+    public MessagingSubForm(xMessagingEdit myParent) {
+        initComponents();
+        this.filterTypes = new ArrayList<MessagingFilterType>();
+
+        this.myParent = myParent;
+
+        textMessaging = new Text_Messaging(this.myParent);
+        emailMessaging = new Email_Messaging(this.myParent);
+
+        messagingTypeCombo.addItem(SMS_MESSAGING);
+        messagingTypeCombo.addItem(EMAIL_MESSAGING);
+
+        mainPanel.add(textMessaging, SMS_MESSAGING);
+        mainPanel.add(emailMessaging, EMAIL_MESSAGING);
+    }
+
+    /**
+     * Adds a filter type
+     *
+     * @param type Filter to add
+     * @param showOnlyWithShift Show only if there is a DShift in the parent if
+     * its true, else show regardless.
+     */
+    public void addFilterType(MessagingFilterType type, boolean showOnlyWithShift) {
+        this.filterTypes.add(type);
+        if (!showOnlyWithShift || (showOnlyWithShift && myParent.getDShift() != null)) {
+            messagingFilterCombo.addItem(type);
+        }
+    }
+
+    public void clearFilters() {
+        this.filterTypes.clear();
+        this.messagingFilterCombo.removeAllItems();
+    }
+
+    public xMessagingEdit getMyParent() {
+        return this.myParent;
+    }
+
+    public Connection getMyConnection() {
+        return myParent.getConnection();
+    }
+
+    public void okPressed() {
+
+    }
+
+    public void cancelPressed() {
+
+    }
+
+    public boolean includeSchedule() {
+        return emailMessaging.includeSchedule();
+    }
+
+    /**
+     * Returns the currently selected messaging type.
+     *
+     * @return
+     */
+    public String getSelectedMessagingType() {
+        return messagingTypeCombo.getSelectedItem().toString();
+    }
+
+    /**
+     * Method Name: doOnReset Purpose of Method: resets combo boxes, subForms
+     * Arguments: a boolean describing if the form is closing Returns: void
+     * Preconditions: form requires reset of all fields Postconditions: all
+     * fields reset, all subForms reset through their doOnReset
+     */
+    public void doOnReset(boolean isClosing) {
+        //  reset combo boxes
+        messagingTypeCombo.setSelectedIndex(0);
+        messagingFilterCombo.setSelectedIndex(0);
+
+        //  reset subForms
+        textMessaging.doOnReset(isClosing);
+        emailMessaging.doOnReset(isClosing);
+    }
+
+    public Text_Messaging getSMSForm() {
+        return this.textMessaging;
+    }
+
+    public Email_Messaging getEmailForm() {
+        return this.emailMessaging;
+    }
+
+    public void setDefaultTemplateMessage() {
+        textMessaging.loadDefaultTemplate();
+    }
+
+    public void showTemplateButton(boolean flag) {
+        textMessaging.showTemplateButton(flag);
+    }
+
+    public void loadTemplates() {
+        try {
+            emailMessaging.loadTemplates();
+            textMessaging.loadTemplates();
+        } catch (Exception exe) {
+        }
+    }
+
+    /**
+     * Method Name: resetAfterSend Purpose of Method: calls either sms reset or
+     * email reset based on argument Arguments: an in describing which reset to
+     * call Returns: void Preconditions: send completed succesfully, form must
+     * be rest Postconditions: appropriate form's reset called
+     */
+    public void resetAfterSend(int form) {
+        if (form == 0) {
+            textMessaging.resetAfterSend();
+        } else if (form == 1) {
+            emailMessaging.resetAfterSend();
+        }
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        controlPanel = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jPanel3 = new javax.swing.JPanel();
+        messagingTypeCombo = new javax.swing.JComboBox();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        messagingFilterCombo = new javax.swing.JComboBox();
+        mainPanel = new javax.swing.JPanel();
+
+        setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.Y_AXIS));
+
+        controlPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Messaging Type"));
+        controlPanel.setMaximumSize(new java.awt.Dimension(32767, 75));
+        controlPanel.setMinimumSize(new java.awt.Dimension(0, 75));
+        controlPanel.setPreferredSize(new java.awt.Dimension(400, 75));
+        controlPanel.setLayout(new javax.swing.BoxLayout(controlPanel, javax.swing.BoxLayout.LINE_AXIS));
+
+        jLabel1.setText("Messaging Type");
+        controlPanel.add(jLabel1);
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 25, Short.MAX_VALUE)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 29, Short.MAX_VALUE)
+        );
+
+        controlPanel.add(jPanel3);
+
+        messagingTypeCombo.setMaximumSize(new java.awt.Dimension(32767, 24));
+        messagingTypeCombo.setMinimumSize(new java.awt.Dimension(120, 24));
+        messagingTypeCombo.setPreferredSize(new java.awt.Dimension(120, 24));
+        messagingTypeCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                messagingTypeComboActionPerformed(evt);
+            }
+        });
+        controlPanel.add(messagingTypeCombo);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 25, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 29, Short.MAX_VALUE)
+        );
+
+        controlPanel.add(jPanel1);
+
+        jLabel2.setText("Messaging Filter");
+        controlPanel.add(jLabel2);
+
+        messagingFilterCombo.setMaximumSize(new java.awt.Dimension(32767, 24));
+        messagingFilterCombo.setMinimumSize(new java.awt.Dimension(120, 24));
+        messagingFilterCombo.setPreferredSize(new java.awt.Dimension(120, 24));
+        messagingFilterCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                messagingFilterComboActionPerformed(evt);
+            }
+        });
+        controlPanel.add(messagingFilterCombo);
+
+        add(controlPanel);
+
+        mainPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Messaging"));
+        mainPanel.setLayout(new java.awt.CardLayout());
+        add(mainPanel);
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void messagingTypeComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_messagingTypeComboActionPerformed
+        CardLayout cl = (CardLayout) (mainPanel.getLayout());
+        cl.show(mainPanel, (String) messagingTypeCombo.getSelectedItem());
+        this.loadTemplates();
+        myParent.resetOnCardChange();
+        myParent.getData();
+    }//GEN-LAST:event_messagingTypeComboActionPerformed
+
+    private void messagingFilterComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_messagingFilterComboActionPerformed
+        MessagingFilterType filterType = (MessagingFilterType) this.messagingFilterCombo.getSelectedItem();
+        if (filterType != null) {
+            filterType.runFilter();
+            if (filterType.getType() == MessagingFilterType.AVAILABLE) {
+                displaySortParametersWindow();
+            } else if (filterType.getType() == MessagingFilterType.LESS_THAN_40) {
+                displaySortParametersWindow();
+            }
+        }
+}//GEN-LAST:event_messagingFilterComboActionPerformed
+
+    /**
+     * Method Name: displaySortParametersWindow Purpose of Method: method either
+     * creates, or sets visible the sortParametersWindow Arguments: none
+     * Returns: void Preconditions: user has attempted to open the
+     * sortParameterWindow Postconditions: window either created or set visible
+     */
+    private void displaySortParametersWindow() {
+        //  display sortParametersWindow
+        if (Main_Window.sortParametersWindow == null) {
+            Main_Window.sortParametersWindow = new MessagingFiltersWindow(this);
+            Main_Window.parentOfApplication.desktop.add(Main_Window.sortParametersWindow);
+            Main_Window.sortParametersWindow.setVisible(true);
+            try {
+                Main_Window.sortParametersWindow.setSelected(true);
+            } catch (PropertyVetoException ex) {
+                Logger.getLogger(Text_Messaging.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            Main_Window.sortParametersWindow.setParentForm(this);
+            Main_Window.sortParametersWindow.setVisible(true);
+        }
+    }
+
+    @Override
+    public GeneralQueryFormat getQuery(boolean isSelected) {
+        return new GenericQuery("SELECT NOW()");
+    }
+
+    @Override
+    public GeneralQueryFormat getSaveQuery(boolean isNewData) {
+        return new GenericQuery("SELECT NOW()");
+    }
+
+    @Override
+    public void loadData(Record_Set rs) {
+    }
+
+    @Override
+    public boolean needsMoreRecordSets() {
+        return false;
+    }
+
+    @Override
+    public String getMyTabTitle() {
+        return "";
+    }
+
+    @Override
+    public JPanel getMyForm() {
+        return this;
+    }
+
+    @Override
+    public void doOnClear() {
+    }
+
+    @Override
+    public boolean userHasAccess() {
+        return Main_Window.parentOfApplication.checkSecurity(
+                security_detail.MODULES.EMPLOYEE_EDIT);
+    }
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel controlPanel;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel mainPanel;
+    private javax.swing.JComboBox messagingFilterCombo;
+    private javax.swing.JComboBox messagingTypeCombo;
+    // End of variables declaration//GEN-END:variables
+
+}

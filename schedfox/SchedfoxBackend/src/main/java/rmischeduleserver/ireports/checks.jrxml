@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="checks" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="3.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="schema" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="payment_id" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[new Integer(309637)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["C:\\work\\champion\\SchedfoxEndPoint\\src\\java\\com\\schedfox\\ireports\\"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT DISTINCT
+employee_payments.*,
+client.*, employee.*, branch_info.*, branch.*, management_clients.*, company.*, work_date, client.client_name,
+reg_pay_hours, reg_pay_rate, reg_pay_amount, over_pay_hours, over_pay_rate, over_pay_amount, dbl_pay_hours, dbl_pay_rate, dbl_pay_amount,
+reg_bill_hours, reg_bill_rate, reg_bill_amount, over_bill_hours, over_bill_rate, over_bill_amount, dbl_bill_hours, dbl_bill_rate, dbl_bill_amount
+FROM
+$P!{schema}.employee_payments
+LEFT JOIN $P!{schema}.employee_payment_breakdown ON employee_payment_breakdown.employee_payment_id = employee_payments.employee_payments_id
+LEFT JOIN $P!{schema}.client ON client.client_id = employee_payment_breakdown.client_id
+INNER JOIN $P!{schema}.employee ON employee.employee_id = employee_payments.employee_id
+INNER JOIN control_db.branch_info ON branch_info.branch_id = employee.branch_id
+INNER JOIN control_db.branch ON branch.branch_id = employee.branch_id
+INNER JOIN control_db.management_clients ON management_clients.management_id = branch.branch_management_id
+INNER JOIN control_db.company ON company.company_management_id = branch.branch_management_id AND company.company_db = $P{schema}
+WHERE
+employee_payments_id = $P{payment_id} AND ((reg_pay_hours + over_pay_hours + dbl_pay_hours) > 0 OR client.client_id IS NULL)
+ORDER BY work_date, client.client_name]]>
+	</queryString>
+	<field name="employee_payments_id" class="java.lang.Integer"/>
+	<field name="employee_id" class="java.lang.Integer"/>
+	<field name="date_of_trans" class="java.sql.Date"/>
+	<field name="trans_type" class="java.lang.Integer"/>
+	<field name="net_pay" class="java.math.BigDecimal"/>
+	<field name="gross_pay" class="java.math.BigDecimal"/>
+	<field name="check_num" class="java.lang.String"/>
+	<field name="usked_id" class="java.lang.String"/>
+	<field name="client_id" class="java.lang.Integer"/>
+	<field name="branch_id" class="java.lang.Integer"/>
+	<field name="client_name" class="java.lang.String"/>
+	<field name="client_phone" class="java.lang.String"/>
+	<field name="client_phone2" class="java.lang.String"/>
+	<field name="client_fax" class="java.lang.String"/>
+	<field name="client_address" class="java.lang.String"/>
+	<field name="client_address2" class="java.lang.String"/>
+	<field name="client_city" class="java.lang.String"/>
+	<field name="client_state" class="java.lang.String"/>
+	<field name="client_zip" class="java.lang.String"/>
+	<field name="management_id" class="java.lang.Integer"/>
+	<field name="client_start_date" class="java.sql.Date"/>
+	<field name="client_end_date" class="java.sql.Date"/>
+	<field name="client_is_deleted" class="java.lang.Integer"/>
+	<field name="client_type" class="java.lang.Integer"/>
+	<field name="client_last_updated" class="java.sql.Timestamp"/>
+	<field name="client_worksite" class="java.lang.Integer"/>
+	<field name="client_training_time" class="java.lang.Double"/>
+	<field name="client_bill_for_training" class="java.lang.Boolean"/>
+	<field name="client_worksite_order" class="java.lang.Integer"/>
+	<field name="rate_code_id" class="java.lang.Integer"/>
+	<field name="client_break" class="java.lang.String"/>
+	<field name="store_volume_id" class="java.lang.Integer"/>
+	<field name="store_remote_market_id" class="java.lang.Boolean"/>
+	<field name="url" class="java.lang.String"/>
+	<field name="cusername" class="java.lang.String"/>
+	<field name="cpassword" class="java.lang.String"/>
+	<field name="default_non_billable" class="java.lang.Boolean"/>
+	<field name="check_out_option_id" class="java.lang.Integer"/>
+	<field name="default_contract_renewal" class="org.postgresql.util.PGInterval"/>
+	<field name="checkin_from_post_phone" class="java.lang.Boolean"/>
+	<field name="contact_for_renewal" class="java.lang.Boolean"/>
+	<field name="created_on" class="java.sql.Timestamp"/>
+	<field name="report_time" class="java.sql.Time"/>
+	<field name="notify_dm_late_checkout_minutes" class="java.lang.Integer"/>
+	<field name="log_into_route" class="java.lang.Boolean"/>
+	<field name="employee_first_name" class="java.lang.String"/>
+	<field name="employee_last_name" class="java.lang.String"/>
+	<field name="employee_middle_initial" class="java.lang.String"/>
+	<field name="employee_ssn" class="java.lang.String"/>
+	<field name="employee_address" class="java.lang.String"/>
+	<field name="employee_address2" class="java.lang.String"/>
+	<field name="employee_city" class="java.lang.String"/>
+	<field name="employee_state" class="java.lang.String"/>
+	<field name="employee_zip" class="java.lang.String"/>
+	<field name="employee_phone" class="java.lang.String"/>
+	<field name="employee_phone2" class="java.lang.String"/>
+	<field name="employee_cell" class="java.lang.String"/>
+	<field name="employee_pager" class="java.lang.String"/>
+	<field name="employee_email" class="java.lang.String"/>
+	<field name="employee_hire_date" class="java.sql.Date"/>
+	<field name="employee_term_date" class="java.sql.Date"/>
+	<field name="employee_is_deleted" class="java.lang.Integer"/>
+	<field name="employee_last_updated" class="java.sql.Timestamp"/>
+	<field name="employee_type" class="java.lang.Integer"/>
+	<field name="web_login" class="java.lang.String"/>
+	<field name="web_pw" class="java.lang.String"/>
+	<field name="employee_birthdate" class="java.sql.Date"/>
+	<field name="employee_login" class="java.lang.String"/>
+	<field name="employee_password" class="java.lang.String"/>
+	<field name="is_login_available" class="java.lang.Boolean"/>
+	<field name="employee_type_id" class="java.lang.Integer"/>
+	<field name="employee_email2" class="java.lang.String"/>
+	<field name="email_messaging" class="java.lang.String"/>
+	<field name="sms_messaging" class="java.lang.Boolean"/>
+	<field name="employee_workhrs_pweek" class="java.lang.Integer"/>
+	<field name="accrued_vacation" class="java.lang.Integer"/>
+	<field name="mark_invisible" class="java.lang.Boolean"/>
+	<field name="gender" class="java.lang.Integer"/>
+	<field name="race" class="java.lang.Integer"/>
+	<field name="phone_contact" class="java.lang.Integer"/>
+	<field name="phone2_contact" class="java.lang.Integer"/>
+	<field name="cell_contact" class="java.lang.Integer"/>
+	<field name="email_contact" class="java.lang.Integer"/>
+	<field name="alt_email_contact" class="java.lang.Integer"/>
+	<field name="employee_deleted_on" class="java.sql.Timestamp"/>
+	<field name="full_time" class="java.lang.Boolean"/>
+	<field name="employee_scan_id" class="java.lang.String"/>
+	<field name="employee_emergency" class="java.lang.String"/>
+	<field name="is_sub_contractor" class="java.lang.Boolean"/>
+	<field name="address" class="java.lang.String"/>
+	<field name="address2" class="java.lang.String"/>
+	<field name="city" class="java.lang.String"/>
+	<field name="state" class="java.lang.String"/>
+	<field name="zip" class="java.lang.String"/>
+	<field name="phone" class="java.lang.String"/>
+	<field name="contact_name" class="java.lang.String"/>
+	<field name="contact_phone" class="java.lang.String"/>
+	<field name="contact_email" class="java.lang.String"/>
+	<field name="branch_name" class="java.lang.String"/>
+	<field name="branch_management_id" class="java.lang.Integer"/>
+	<field name="timezone" class="java.lang.String"/>
+	<field name="management_client_name" class="java.lang.String"/>
+	<field name="management_client_address" class="java.lang.String"/>
+	<field name="management_client_address2" class="java.lang.String"/>
+	<field name="management_client_city" class="java.lang.String"/>
+	<field name="management_client_state" class="java.lang.String"/>
+	<field name="management_client_zip" class="java.lang.String"/>
+	<field name="management_client_phone" class="java.lang.String"/>
+	<field name="management_client_email" class="java.lang.String"/>
+	<field name="management_is_deleted" class="java.lang.Boolean"/>
+	<field name="management_date_started" class="java.sql.Timestamp"/>
+	<field name="amount_to_bill" class="java.math.BigDecimal"/>
+	<field name="bill_interval" class="org.postgresql.util.PGInterval"/>
+	<field name="bill_start_date" class="java.sql.Date"/>
+	<field name="amount_per_employee" class="java.math.BigDecimal"/>
+	<field name="management_billing_email1" class="java.lang.String"/>
+	<field name="management_billing_email2" class="java.lang.String"/>
+	<field name="company_id" class="java.lang.Integer"/>
+	<field name="company_name" class="java.lang.String"/>
+	<field name="company_db" class="java.lang.String"/>
+	<field name="company_management_id" class="java.lang.Integer"/>
+	<field name="company_status" class="java.lang.String"/>
+	<field name="status_description" class="java.lang.String"/>
+	<field name="status_modifieddate" class="java.sql.Date"/>
+	<field name="employee_login_prefix" class="java.lang.String"/>
+	<field name="company_url" class="java.lang.String"/>
+	<field name="date_of_creation" class="java.sql.Date"/>
+	<field name="has_schedule" class="java.lang.Boolean"/>
+	<field name="patrol_pro_client" class="java.lang.Boolean"/>
+	<field name="alert_late_checkin" class="java.lang.Boolean"/>
+	<field name="show_all_employees_on_tracking" class="java.lang.Boolean"/>
+	<field name="work_date" class="java.sql.Date"/>
+	<field name="reg_pay_hours" class="java.math.BigDecimal"/>
+	<field name="reg_pay_rate" class="java.math.BigDecimal"/>
+	<field name="reg_pay_amount" class="java.math.BigDecimal"/>
+	<field name="over_pay_hours" class="java.math.BigDecimal"/>
+	<field name="over_pay_rate" class="java.math.BigDecimal"/>
+	<field name="over_pay_amount" class="java.math.BigDecimal"/>
+	<field name="dbl_pay_hours" class="java.math.BigDecimal"/>
+	<field name="dbl_pay_rate" class="java.math.BigDecimal"/>
+	<field name="dbl_pay_amount" class="java.math.BigDecimal"/>
+	<field name="reg_bill_hours" class="java.math.BigDecimal"/>
+	<field name="reg_bill_rate" class="java.math.BigDecimal"/>
+	<field name="reg_bill_amount" class="java.math.BigDecimal"/>
+	<field name="over_bill_hours" class="java.math.BigDecimal"/>
+	<field name="over_bill_rate" class="java.math.BigDecimal"/>
+	<field name="over_bill_amount" class="java.math.BigDecimal"/>
+	<field name="dbl_bill_hours" class="java.math.BigDecimal"/>
+	<field name="dbl_bill_rate" class="java.math.BigDecimal"/>
+	<field name="dbl_bill_amount" class="java.math.BigDecimal"/>
+	<variable name="total_pay" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal($F{reg_pay_amount}.doubleValue() + $F{over_pay_amount}.doubleValue() + $F{dbl_pay_amount}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="total_taxes" class="java.math.BigDecimal" resetType="None"/>
+	<variable name="total_deductions" class="java.math.BigDecimal" calculation="System"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="91" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="414" height="30"/>
+				<textElement>
+					<font size="22"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{company_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="30" width="414" height="20"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{address}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="50" width="414" height="20"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{city} + ", " + $F{state} + " " + $F{zip}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="70" width="414" height="20"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{phone}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="624" y="0" width="82" height="20"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Check #]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="624" y="20" width="82" height="20"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Check Date]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="706" y="0" width="96" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{check_num}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MMMMM dd, yyyy">
+				<reportElement x="706" y="20" width="96" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{date_of_trans}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="91" splitType="Stretch">
+			<textField>
+				<reportElement x="103" y="0" width="180" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{employee_first_name} + " " + $F{employee_last_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="103" y="20" width="180" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{employee_address}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="103" y="40" width="180" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{employee_city} + ", " + $F{employee_state} + " " + $F{employee_zip}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="16" y="71" width="100" height="20"/>
+				<textElement/>
+				<text><![CDATA[Date of work]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="116" y="71" width="100" height="20"/>
+				<textElement/>
+				<text><![CDATA[Customer Name]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="216" y="71" width="67" height="20"/>
+				<textElement/>
+				<text><![CDATA[Regular Hrs]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="283" y="71" width="67" height="20"/>
+				<textElement/>
+				<text><![CDATA[Regular Rate]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="350" y="71" width="67" height="20"/>
+				<textElement/>
+				<text><![CDATA[Regular Pay]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="417" y="71" width="67" height="20"/>
+				<textElement/>
+				<text><![CDATA[Overtime Hrs]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="484" y="71" width="67" height="20"/>
+				<textElement/>
+				<text><![CDATA[Overtime Rate]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="551" y="71" width="67" height="20"/>
+				<textElement/>
+				<text><![CDATA[Overtime Pay]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="618" y="71" width="67" height="20"/>
+				<textElement/>
+				<text><![CDATA[Pay Amount]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="23" splitType="Stretch">
+			<textField pattern="MMMMM dd, yyyy">
+				<reportElement x="16" y="0" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{work_date}]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement x="116" y="0" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{client_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="216" y="0" width="67" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{reg_pay_hours}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="283" y="0" width="67" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{reg_pay_rate}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="350" y="0" width="67" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{reg_pay_amount}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="551" y="0" width="67" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{over_pay_amount}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="484" y="0" width="67" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{over_pay_rate}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="417" y="0" width="67" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{over_pay_hours}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="618" y="0" width="67" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal($F{reg_pay_amount}.doubleValue() + $F{over_pay_amount}.doubleValue() + $F{dbl_pay_amount}.doubleValue())]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="165" splitType="Stretch">
+			<staticText>
+				<reportElement x="484" y="60" width="100" height="14"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Gross Pay]]></text>
+			</staticText>
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="584" y="60" width="100" height="14"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{gross_pay}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="584" y="102" width="100" height="14"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{net_pay}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="484" y="102" width="100" height="14"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Net Pay]]></text>
+			</staticText>
+			<subreport>
+				<reportElement x="16" y="4" width="200" height="161"/>
+				<subreportParameter name="schema">
+					<subreportParameterExpression><![CDATA[$P{schema}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="payment_id">
+					<subreportParameterExpression><![CDATA[$P{payment_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<returnValue subreportVariable="total_deduction" toVariable="total_deductions"/>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "deductions.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement x="243" y="4" width="198" height="161"/>
+				<subreportParameter name="schema">
+					<subreportParameterExpression><![CDATA[$P{schema}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="payment_id">
+					<subreportParameterExpression><![CDATA[$P{payment_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<returnValue subreportVariable="total_taxes" toVariable="total_taxes"/>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "taxes.jasper"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement x="484" y="74" width="100" height="14"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Taxes]]></text>
+			</staticText>
+			<textField evaluationTime="Band" pattern="¤ #,##0.00">
+				<reportElement x="584" y="74" width="100" height="14"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_taxes}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Band" pattern="¤ #,##0.00">
+				<reportElement x="584" y="88" width="100" height="14"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_deductions}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="484" y="88" width="100" height="14"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Deductions]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

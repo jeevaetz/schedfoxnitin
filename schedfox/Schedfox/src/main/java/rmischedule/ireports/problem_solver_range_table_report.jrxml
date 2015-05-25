@@ -1,0 +1,933 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="problem_solver_range_report" pageWidth="595" pageHeight="842" columnWidth="575" leftMargin="10" rightMargin="10" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="4.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="style1" forecolor="#000000">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[new Boolean($F{count}.intValue() == 0)]]></conditionExpression>
+			<style forecolor="#990033"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="schema" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="startDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2014-06-01"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="endDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2014-10-30"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="groupby" class="java.lang.Boolean">
+		<defaultValueExpression><![CDATA[false]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+MAX(CASE WHEN $P{groupby} THEN branch.branch_name ELSE 'All Branches' END) as branch_name,
+mydata.user_id,
+SUM(none_selected) as none_selected,
+SUM(multi_selected) as multi_selected,
+SUM(courtesy) as courtesy,
+SUM(service) as service,
+SUM(site) as site,
+SUM(client_request) as client_request,
+SUM(followup) as followup,
+SUM(other) as other,
+SUM(cancelled) as cancelled,
+SUM(none_selected + multi_selected + courtesy + service + site + client_request + followup + other) as mytotal,
+SUM(CASE WHEN mydata.branch_id != -1 THEN 1 ELSE 0 END) as dist_client,
+COUNT(DISTINCT mydata.cli_id) as dist_clients,
+user_first_name || ' ' || user_last_name as user_fullname,
+(
+	SELECT COUNT(DISTINCT iproblem.client_id) FROM
+	$P!{schema}.problemsolver as iproblem
+	WHERE
+	iproblem.user_id = "user".user_id AND DATE(ps_date)
+		BETWEEN DATE(DATE($P{startDate}) - interval '7 days') AND DATE(DATE($P{startDate}) - interval '1 days') AND
+		EXISTS (
+			SELECT client_to_user_contact.user_id FROM
+			$P!{schema}.client_to_user_contact
+			INNER JOIN $P!{schema}.client as iclient ON iclient.client_id = client_to_user_contact.client_id
+			INNER JOIN $P!{schema}.client_billing ON client_billing.client_id = iclient.client_id
+			WHERE
+			client_to_user_contact.user_id = iproblem.user_id AND iclient.client_is_deleted != 1
+			AND iclient.client_id = iproblem.client_id)
+) as prior_week,
+(
+	SELECT COUNT(DISTINCT iproblem.client_id) FROM
+	$P!{schema}.problemsolver as iproblem
+	WHERE
+	iproblem.user_id = "user".user_id AND DATE(ps_date)
+		BETWEEN DATE(DATE($P{startDate}) - interval '30 days') AND DATE(DATE($P{startDate}) - interval '1 days') AND
+		EXISTS (
+			SELECT client_to_user_contact.user_id FROM
+			$P!{schema}.client_to_user_contact
+			INNER JOIN $P!{schema}.client as iclient ON iclient.client_id = client_to_user_contact.client_id
+			INNER JOIN $P!{schema}.client_billing ON client_billing.client_id = iclient.client_id
+			WHERE
+			client_to_user_contact.user_id = iproblem.user_id AND iclient.client_is_deleted != 1
+			AND iclient.client_id = iproblem.client_id)
+) as prior_month,
+(
+	SELECT COUNT(*)
+	FROM
+	$P!{schema}.client_to_user_contact
+	INNER JOIN $P!{schema}.client ON client.client_id = client_to_user_contact.client_id
+	LEFT JOIN $P!{schema}.client_billing ON client_billing.client_id = client.client_id
+	WHERE
+	client.client_is_deleted != 1  AND client_to_user_contact.user_id = "user".user_id
+) as client_count_today,
+(
+	SELECT COUNT(*)
+	FROM
+	$P!{schema}.client_to_user_contact
+	INNER JOIN $P!{schema}.client ON client.client_id = client_to_user_contact.client_id
+	LEFT JOIN $P!{schema}.client_billing ON client_billing.client_id = client.client_id
+	WHERE
+	client.client_is_deleted != 1  AND client_to_user_contact.user_id = "user".user_id AND
+	client.client_start_date < DATE(DATE($P{startDate}) - interval '1 days')
+) as client_count_last_week,
+(
+	SELECT COUNT(*)
+	FROM
+	$P!{schema}.client_to_user_contact
+	INNER JOIN $P!{schema}.client ON client.client_id = client_to_user_contact.client_id
+	LEFT JOIN $P!{schema}.client_billing ON client_billing.client_id = client.client_id
+	WHERE
+	client.client_is_deleted != 1  AND client_to_user_contact.user_id = "user".user_id AND
+	client.client_start_date < DATE(DATE($P{startDate}) - interval '1 days')
+) as client_count_last_month
+FROM
+(
+	SELECT
+	problemsolver.ps_id,
+	user_id,
+	problemsolver.client_id,
+	(CASE WHEN EXISTS (
+			SELECT client_to_user_contact.user_id FROM
+			$P!{schema}.client_to_user_contact
+			INNER JOIN $P!{schema}.client as iclient ON iclient.client_id = client_to_user_contact.client_id
+			WHERE
+			client_to_user_contact.user_id = problemsolver.user_id AND iclient.client_is_deleted != 1
+			AND iclient.client_id = problemsolver.client_id
+			AND client_to_user_contact.user_id != 109)
+	THEN client.branch_id ELSE -1 END) as branch_id,
+	(CASE WHEN EXISTS (
+			SELECT client_to_user_contact.user_id FROM
+			$P!{schema}.client_to_user_contact
+			INNER JOIN $P!{schema}.client as iclient ON iclient.client_id = client_to_user_contact.client_id
+			WHERE
+			client_to_user_contact.user_id = problemsolver.user_id AND iclient.client_is_deleted != 1
+			AND iclient.client_id = problemsolver.client_id
+			AND client_to_user_contact.user_id != 109)
+	THEN problemsolver.client_id ELSE -1 END) cli_id,
+	(CASE WHEN MAX(problemsolver_to_types.ps_id) IS NULL THEN 1 ELSE 0 END) as none_selected,
+	(CASE WHEN COUNT(*) > 1 THEN 1 ELSE 0 END) as multi_selected,
+	(CASE WHEN COUNT(*) = 1 AND MAX(problemsolver_to_types.problemsolver_type_id) = 1 THEN 1 ELSE 0 END) as courtesy,
+	(CASE WHEN COUNT(*) = 1 AND MAX(problemsolver_to_types.problemsolver_type_id) = 2 THEN 1 ELSE 0 END) as service,
+	(CASE WHEN COUNT(*) = 1 AND MAX(problemsolver_to_types.problemsolver_type_id) = 3 THEN 1 ELSE 0 END) as site,
+	(CASE WHEN COUNT(*) = 1 AND MAX(problemsolver_to_types.problemsolver_type_id) = 4 THEN 1 ELSE 0 END) as client_request,
+	(CASE WHEN COUNT(*) = 1 AND MAX(problemsolver_to_types.problemsolver_type_id) = 5 THEN 1 ELSE 0 END) as followup,
+	(CASE WHEN COUNT(*) = 1 AND MAX(problemsolver_to_types.problemsolver_type_id) = 6 THEN 1 ELSE 0 END) as other,
+	(CASE WHEN COUNT(*) = 1 AND MAX(problemsolver_to_types.problemsolver_type_id) = 7 THEN 1 ELSE 0 END) as cancelled
+	FROM
+	$P!{schema}.problemsolver
+	LEFT JOIN $P!{schema}.client ON client.client_id = problemsolver.client_id
+	LEFT JOIN $P!{schema}.problemsolver_to_types ON problemsolver_to_types.ps_id = problemsolver.ps_id
+	WHERE
+	DATE(ps_date) BETWEEN DATE($P{startDate}) AND DATE($P{endDate})
+	GROUP BY problemsolver.ps_id, user_id, problemsolver.client_id, client.branch_id
+) as mydata
+INNER JOIN control_db.user ON "user".user_id = mydata.user_id
+INNER JOIN control_db.branch ON branch.branch_id = mydata.branch_id
+GROUP BY (CASE WHEN $P{groupby} THEN branch_name ELSE 'All Branches' END), mydata.user_id, user_first_name || ' ' || user_last_name, "user".user_id
+ORDER BY (CASE WHEN $P{groupby} THEN MAX(branch_name) ELSE 'All Branches' END),user_first_name || ' ' || user_last_name]]>
+	</queryString>
+	<field name="branch_name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="user_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="none_selected" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="multi_selected" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="courtesy" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="service" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="site" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_request" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="followup" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="other" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="cancelled" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="mytotal" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="dist_client" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="dist_clients" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="user_fullname" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="prior_week" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="prior_month" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_count_today" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_count_last_week" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="client_count_last_month" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<variable name="cc_count" class="java.lang.Long" resetType="Group" resetGroup="branch_name" calculation="Sum">
+		<variableExpression><![CDATA[$F{client_count_today}]]></variableExpression>
+	</variable>
+	<variable name="courtesy_count" class="java.lang.Long" resetType="Group" resetGroup="branch_name" calculation="Sum">
+		<variableExpression><![CDATA[$F{courtesy}]]></variableExpression>
+	</variable>
+	<variable name="service_count" class="java.lang.Long" resetType="Group" resetGroup="branch_name" calculation="Sum">
+		<variableExpression><![CDATA[$F{service}]]></variableExpression>
+	</variable>
+	<variable name="site_count" class="java.lang.Long" resetType="Group" resetGroup="branch_name" calculation="Sum">
+		<variableExpression><![CDATA[$F{site}]]></variableExpression>
+	</variable>
+	<variable name="request_count" class="java.lang.Long" resetType="Group" resetGroup="branch_name" calculation="Sum">
+		<variableExpression><![CDATA[$F{client_request}]]></variableExpression>
+	</variable>
+	<variable name="followup_count" class="java.lang.Long" resetType="Group" resetGroup="branch_name" calculation="Sum">
+		<variableExpression><![CDATA[$F{followup}]]></variableExpression>
+	</variable>
+	<variable name="other_count" class="java.lang.Long" resetType="Group" resetGroup="branch_name" calculation="Sum">
+		<variableExpression><![CDATA[$F{other}]]></variableExpression>
+	</variable>
+	<variable name="multiple_count" class="java.lang.Long" resetType="Group" resetGroup="branch_name" calculation="Sum">
+		<variableExpression><![CDATA[$F{multi_selected}]]></variableExpression>
+	</variable>
+	<variable name="none_count" class="java.lang.Long" resetType="Group" resetGroup="branch_name" calculation="Sum">
+		<variableExpression><![CDATA[$F{none_selected}]]></variableExpression>
+	</variable>
+	<variable name="total_count" class="java.lang.Long" resetType="Group" resetGroup="branch_name" calculation="Sum">
+		<variableExpression><![CDATA[$F{mytotal}]]></variableExpression>
+	</variable>
+	<variable name="prior_wk_count" class="java.lang.Long" resetType="Group" resetGroup="branch_name" calculation="Sum">
+		<variableExpression><![CDATA[$F{prior_week}]]></variableExpression>
+	</variable>
+	<variable name="prior_mnth_count" class="java.lang.Long" resetType="Group" resetGroup="branch_name" calculation="Sum">
+		<variableExpression><![CDATA[$F{prior_month}]]></variableExpression>
+	</variable>
+	<group name="branch_name">
+		<groupExpression><![CDATA[$P{groupby} == true ? $F{branch_name} : ""]]></groupExpression>
+		<groupHeader>
+			<band height="58">
+				<staticText>
+					<reportElement x="0" y="28" width="76" height="30"/>
+					<box leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement verticalAlignment="Bottom">
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[DM Name]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="76" y="28" width="31" height="30"/>
+					<box leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement verticalAlignment="Bottom">
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[# Clients]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="107" y="28" width="285" height="15" backcolor="#99CCFF"/>
+					<box leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[Types]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="107" y="43" width="42" height="15" backcolor="#CCFFCC"/>
+					<box leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[Courtesy]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="149" y="43" width="30" height="15" backcolor="#CCFFCC"/>
+					<box leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[Srvce]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="179" y="43" width="38" height="15" backcolor="#CCFFCC"/>
+					<box leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[Site Visit]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="217" y="43" width="37" height="15" backcolor="#CCFFCC"/>
+					<box leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[Request]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="254" y="43" width="40" height="15" backcolor="#CCFFCC"/>
+					<box leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[Followup]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="294" y="43" width="27" height="15" backcolor="#CCFFCC"/>
+					<box leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[Other]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="392" y="28" width="25" height="30"/>
+					<box leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement verticalAlignment="Bottom">
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[Total]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="417" y="28" width="31" height="30"/>
+					<box leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement verticalAlignment="Bottom">
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[%]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="448" y="28" width="28" height="30"/>
+					<box leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement verticalAlignment="Bottom">
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[Last Wk]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="476" y="28" width="31" height="30"/>
+					<box leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement verticalAlignment="Bottom">
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[Last Wk %]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="321" y="43" width="35" height="15" backcolor="#CCFFCC"/>
+					<box leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[Multiple]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="536" y="28" width="35" height="30"/>
+					<box leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement verticalAlignment="Bottom">
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[Last Mnth %]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="507" y="28" width="29" height="30"/>
+					<box leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement verticalAlignment="Bottom">
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[Last Mnth]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="356" y="43" width="36" height="15" backcolor="#CCFFCC"/>
+					<box leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<text><![CDATA[None]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="0" y="0" width="555" height="21"/>
+					<textElement>
+						<font size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{branch_name}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="27">
+				<textField>
+					<reportElement x="294" y="0" width="27" height="17"/>
+					<box topPadding="2" leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$V{other_count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="0" y="0" width="76" height="17"/>
+					<box topPadding="2" leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Totals"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="107" y="0" width="42" height="17"/>
+					<box topPadding="2" leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$V{courtesy_count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="321" y="0" width="35" height="17"/>
+					<box topPadding="2" leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$V{multiple_count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="149" y="0" width="30" height="17"/>
+					<box topPadding="2" leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$V{service_count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="179" y="0" width="38" height="17"/>
+					<box topPadding="2" leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$V{site_count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="392" y="0" width="25" height="17"/>
+					<box topPadding="2" leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$V{total_count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="356" y="0" width="36" height="17"/>
+					<box topPadding="2" leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$V{none_count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="76" y="0" width="31" height="17"/>
+					<box topPadding="2" leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$V{cc_count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="254" y="0" width="40" height="17"/>
+					<box topPadding="2" leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$V{followup_count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="217" y="0" width="37" height="17"/>
+					<box topPadding="2" leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$V{request_count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="448" y="0" width="28" height="17"/>
+					<box topPadding="2" leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$V{prior_wk_count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="507" y="0" width="29" height="17"/>
+					<box topPadding="2" leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$V{prior_mnth_count}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0 %">
+					<reportElement x="417" y="0" width="31" height="17"/>
+					<box topPadding="2" leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0 %">
+					<reportElement x="476" y="0" width="31" height="17"/>
+					<box topPadding="2" leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0 %">
+					<reportElement x="536" y="0" width="35" height="17"/>
+					<box topPadding="2" leftPadding="3" rightPadding="3">
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="47" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="555" height="34"/>
+				<textElement>
+					<font size="18"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Corporate Communicator Report for " +
+new java.text.SimpleDateFormat("MM/dd/yyyy").format(new java.text.SimpleDateFormat("yyyy-MM-dd").parse($P{startDate})) +
+" to " +
+new java.text.SimpleDateFormat("MM/dd/yyyy").format(new java.text.SimpleDateFormat("yyyy-MM-dd").parse($P{endDate}))]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="17" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="76" height="17"/>
+				<box topPadding="2" leftPadding="3" rightPadding="3">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{user_fullname}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="76" y="0" width="31" height="17"/>
+				<box topPadding="2" leftPadding="3" rightPadding="3">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{client_count_today}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="107" y="0" width="42" height="17"/>
+				<box topPadding="2" leftPadding="3" rightPadding="3">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{courtesy}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="149" y="0" width="30" height="17"/>
+				<box topPadding="2" leftPadding="3" rightPadding="3">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{courtesy}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="179" y="0" width="38" height="17"/>
+				<box topPadding="2" leftPadding="3" rightPadding="3">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{site}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="217" y="0" width="37" height="17"/>
+				<box topPadding="2" leftPadding="3" rightPadding="3">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{client_request}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="254" y="0" width="40" height="17"/>
+				<box topPadding="2" leftPadding="3" rightPadding="3">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{followup}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="294" y="0" width="27" height="17"/>
+				<box topPadding="2" leftPadding="3" rightPadding="3">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{other}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="321" y="0" width="35" height="17"/>
+				<box topPadding="2" leftPadding="3" rightPadding="3">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{multi_selected}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="392" y="0" width="25" height="17"/>
+				<box topPadding="2" leftPadding="3" rightPadding="3">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{mytotal}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="356" y="0" width="36" height="17"/>
+				<box topPadding="2" leftPadding="3" rightPadding="3">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{none_selected}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="448" y="0" width="28" height="17"/>
+				<box topPadding="2" leftPadding="3" rightPadding="3">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{prior_week}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="507" y="0" width="29" height="17"/>
+				<box topPadding="2" leftPadding="3" rightPadding="3">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{prior_month}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0 %">
+				<reportElement x="417" y="0" width="31" height="17"/>
+				<box topPadding="2" leftPadding="3" rightPadding="3">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Double"><![CDATA[new Double($F{dist_clients}.doubleValue() / $F{client_count_today}.doubleValue())]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0 %">
+				<reportElement x="476" y="0" width="31" height="17"/>
+				<box topPadding="2" leftPadding="3" rightPadding="3">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Double"><![CDATA[new Double($F{prior_week}.doubleValue() / $F{client_count_last_week}.doubleValue())]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0 %">
+				<reportElement x="536" y="0" width="35" height="17"/>
+				<box topPadding="2" leftPadding="3" rightPadding="3">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Double"><![CDATA[new Double($F{prior_month}.doubleValue() / $F{client_count_last_month}.doubleValue())]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

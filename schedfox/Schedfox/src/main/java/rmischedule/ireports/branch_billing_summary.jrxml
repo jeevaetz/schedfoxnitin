@@ -1,0 +1,1968 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="branch_billing_summary" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="331"/>
+	<property name="ireport.y" value="0"/>
+	<style name="Crosstab Data Text" hAlign="Center"/>
+	<parameter name="startDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2012-12-10"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="endDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2013-01-27"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+my_date + interval '6 days' as my_date,
+(dallas_data.over) as dallas_overtime,
+(dallas_data.reg + dallas_data.over) as dallas_total_hours,
+(dallas_data.training_worked) as dallas_training_worked,
+(dallas_data.supervisor_worked) as dallas_supervisor_worked,
+(dallas_data.open_shifts) as dallas_open_shifts,
+(florida_data.over) as florida_overtime,
+(florida_data.reg + florida_data.over) as florida_total_hours,
+(florida_data.training_worked) as florida_training_worked,
+(florida_data.supervisor_worked) as florida_supervisor_worked,
+(florida_data.open_shifts) as florida_open_shifts,
+(san_antonio_data.over) as san_antonio_overtime,
+(san_antonio_data.reg + san_antonio_data.over) as san_antonio_total_hours,
+(san_antonio_data.training_worked) as san_antonio_training_worked,
+(san_antonio_data.open_shifts) as san_antonio_open_shifts,
+(san_antonio_data.supervisor_worked) as san_antonio_supervisor_worked,
+(south_houston_data.over) as south_houston_overtime,
+(south_houston_data.reg + south_houston_data.over) as south_houston_total_hours,
+(south_houston_data.training_worked) as south_houston_training_worked,
+(south_houston_data.supervisor_worked) as south_houston_supervisor_worked,
+(south_houston_data.open_shifts) as south_houston_open_shifts,
+(philadelphia_data.over) as philadelphia_overtime,
+(philadelphia_data.reg + philadelphia_data.over) as philadelphia_total_hours,
+(philadelphia_data.training_worked) as philadelphia_training_worked,
+(philadelphia_data.open_shifts) as philadelphia_open_shifts,
+(philadelphia_data.supervisor_worked) as philadelphia_supervisor_worked,
+(mississippi_data.over) as mississippi_overtime,
+(mississippi_data.reg + mississippi_data.over) as mississippi_total_hours,
+(mississippi_data.training_worked) as mississippi_training_worked,
+(mississippi_data.supervisor_worked) as mississippi_supervisor_worked,
+(mississippi_data.open_shifts) as mississippi_open_shifts,
+(louisiana_data.over) as louisiana_overtime,
+(louisiana_data.reg + louisiana_data.over) as louisiana_total_hours,
+(louisiana_data.training_worked) as louisiana_training_worked,
+(louisiana_data.open_shifts) as louisiana_open_shifts,
+(louisiana_data.supervisor_worked) as louisiana_supervisor_worked,
+(arlington_data.over) as arlington_overtime,
+(arlington_data.reg + arlington_data.over) as arlington_total_hours,
+(arlington_data.training_worked) as arlington_training_worked,
+(arlington_data.supervisor_worked) as arlington_supervisor_worked,
+(arlington_data.open_shifts) as arlington_open_shifts,
+(north_houston_data.over) as north_houston_overtime,
+(north_houston_data.reg + north_houston_data.over) as north_houston_total_hours,
+(north_houston_data.training_worked) as north_houston_training_worked,
+(north_houston_data.supervisor_worked) as north_houston_supervisor_worked,
+(north_houston_data.open_shifts) as north_houston_open_shifts,
+(baltimore_data.over) as baltimore_overtime,
+(baltimore_data.reg + baltimore_data.over) as baltimore_total_hours,
+(baltimore_data.training_worked) as baltimore_training_worked,
+(baltimore_data.supervisor_worked) as baltimore_supervisor_worked,
+(baltimore_data.open_shifts) as baltimore_open_shifts
+FROM
+(
+    SELECT DATE(date_trunc('week', doy)) as my_date FROM generate_date_series(DATE($P{startDate}), DATE($P{endDate}))
+    GROUP BY DATE(date_trunc('week', doy))
+    ORDER BY DATE(date_trunc('week', doy))
+) as mydates
+LEFT JOIN
+(
+    SELECT
+	SUM(CASE WHEN time_worked > 40 THEN time_worked - 40 ELSE 0 END) as over,
+	SUM(CASE WHEN time_worked > 40 THEN 40 ELSE time_worked END) as reg,
+	SUM(training_worked) as training_worked,
+	SUM(open_shifts) as open_shifts,
+	SUM(supervisor_worked) as supervisor_worked,
+	week_started
+	FROM
+	(
+		SELECT
+		SUM (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) as time_worked,
+		SUM((CASE WHEN is_type(data.type::text, '10000'::text) THEN
+			((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0 ELSE
+			0 END)) as supervisor_worked,
+		date_trunc('week', data.date) as week_started,
+		SUM(CASE WHEN is_type(data.type::text, '300'::text)
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as training_worked,
+		SUM(CASE WHEN eid = 0
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as open_shifts
+		FROM
+		assemble_schedule(DATE($P{startDate}), DATE($P{endDate}), 1) as data
+		LEFT JOIN employee ON employee.employee_id = data.eid
+		GROUP BY date_trunc('week', data.date), eid
+	) as data
+	GROUP BY week_started
+)  as san_antonio_data ON san_antonio_data.week_started = mydates.my_date
+LEFT JOIN
+(
+    SELECT
+	SUM(CASE WHEN time_worked > 40 THEN time_worked - 40 ELSE 0 END) as over,
+	SUM(CASE WHEN time_worked > 40 THEN 40 ELSE time_worked END) as reg,
+	SUM(training_worked) as training_worked,
+	SUM(supervisor_worked) as supervisor_worked,
+	SUM(open_shifts) as open_shifts,
+	week_started
+	FROM
+	(
+		SELECT
+		SUM (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) as time_worked,
+		date_trunc('week', data.date) as week_started,
+		SUM(CASE WHEN is_type(data.type::text, '300'::text)
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as training_worked,
+		SUM((CASE WHEN is_type(data.type::text, '10000'::text) THEN
+			((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0 ELSE
+			0 END)) as supervisor_worked,
+		SUM(CASE WHEN eid = 0
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as open_shifts
+		FROM
+		assemble_schedule(DATE($P{startDate}), DATE($P{endDate}), 2) as data
+		LEFT JOIN employee ON employee.employee_id = data.eid
+		GROUP BY date_trunc('week', data.date), eid
+	) as data
+	GROUP BY week_started
+)  as south_houston_data ON south_houston_data.week_started = mydates.my_date
+LEFT JOIN
+(
+    SELECT
+	SUM(CASE WHEN time_worked > 40 THEN time_worked - 40 ELSE 0 END) as over,
+	SUM(CASE WHEN time_worked > 40 THEN 40 ELSE time_worked END) as reg,
+	SUM(training_worked) as training_worked,
+	SUM(open_shifts) as open_shifts,
+	SUM(supervisor_worked) as supervisor_worked,
+	week_started
+	FROM
+	(
+		SELECT
+		SUM (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) as time_worked,
+		SUM((CASE WHEN is_type(data.type::text, '10000'::text) THEN
+			((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0 ELSE
+			0 END)) as supervisor_worked,
+		date_trunc('week', data.date) as week_started,
+		SUM(CASE WHEN is_type(data.type::text, '300'::text)
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as training_worked,
+		SUM(CASE WHEN eid = 0
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as open_shifts
+		FROM
+		assemble_schedule(DATE($P{startDate}), DATE($P{endDate}), 3) as data
+		LEFT JOIN employee ON employee.employee_id = data.eid
+		GROUP BY date_trunc('week', data.date), eid
+	) as data
+	GROUP BY week_started
+)  as dallas_data ON dallas_data.week_started = mydates.my_date
+LEFT JOIN
+(
+    SELECT
+	SUM(CASE WHEN time_worked > 40 THEN time_worked - 40 ELSE 0 END) as over,
+	SUM(CASE WHEN time_worked > 40 THEN 40 ELSE time_worked END) as reg,
+	SUM(training_worked) as training_worked,
+	SUM(supervisor_worked) as supervisor_worked,
+	SUM(open_shifts) as open_shifts,
+	week_started
+	FROM
+	(
+		SELECT
+		SUM (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) as time_worked,
+		date_trunc('week', data.date) as week_started,
+		SUM(CASE WHEN is_type(data.type::text, '300'::text)
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as training_worked,
+		SUM((CASE WHEN is_type(data.type::text, '10000'::text) THEN
+			((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0 ELSE
+			0 END)) as supervisor_worked,
+		SUM(CASE WHEN eid = 0
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as open_shifts
+		FROM
+		assemble_schedule(DATE($P{startDate}), DATE($P{endDate}), 30) as data
+		LEFT JOIN employee ON employee.employee_id = data.eid
+		GROUP BY date_trunc('week', data.date), eid
+	) as data
+	GROUP BY week_started
+)  as florida_data ON florida_data.week_started = mydates.my_date
+LEFT JOIN
+(
+    SELECT
+	SUM(CASE WHEN time_worked > 40 THEN time_worked - 40 ELSE 0 END) as over,
+	SUM(CASE WHEN time_worked > 40 THEN 40 ELSE time_worked END) as reg,
+	SUM(training_worked) as training_worked,
+	SUM(open_shifts) as open_shifts,
+	SUM(supervisor_worked) as supervisor_worked,
+	week_started
+	FROM
+	(
+		SELECT
+		SUM (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) as time_worked,
+		date_trunc('week', data.date) as week_started,
+		SUM(CASE WHEN is_type(data.type::text, '300'::text)
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as training_worked,
+		SUM((CASE WHEN is_type(data.type::text, '10000'::text) THEN
+			((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0 ELSE
+			0 END)) as supervisor_worked,
+		SUM(CASE WHEN eid = 0
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as open_shifts
+		FROM
+		assemble_schedule(DATE($P{startDate}), DATE($P{endDate}), 8) as data
+		LEFT JOIN employee ON employee.employee_id = data.eid
+		GROUP BY date_trunc('week', data.date), eid
+	) as data
+	GROUP BY week_started
+)  as philadelphia_data ON philadelphia_data.week_started = mydates.my_date
+LEFT JOIN
+(
+    SELECT
+	SUM(CASE WHEN time_worked > 40 THEN time_worked - 40 ELSE 0 END) as over,
+	SUM(CASE WHEN time_worked > 40 THEN 40 ELSE time_worked END) as reg,
+	SUM(training_worked) as training_worked,
+	SUM(open_shifts) as open_shifts,
+	SUM(supervisor_worked) as supervisor_worked,
+	week_started
+	FROM
+	(
+		SELECT
+		SUM (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) as time_worked,
+		date_trunc('week', data.date) as week_started,
+		SUM(CASE WHEN is_type(data.type::text, '300'::text)
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as training_worked,
+		SUM((CASE WHEN is_type(data.type::text, '10000'::text) THEN
+			((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0 ELSE
+			0 END)) as supervisor_worked,
+		SUM(CASE WHEN eid = 0
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as open_shifts
+		FROM
+		assemble_schedule(DATE($P{startDate}), DATE($P{endDate}), 21) as data
+		LEFT JOIN employee ON employee.employee_id = data.eid
+		GROUP BY date_trunc('week', data.date), eid
+	) as data
+	GROUP BY week_started
+)  as mississippi_data ON mississippi_data.week_started = mydates.my_date
+LEFT JOIN
+(
+    SELECT
+	SUM(CASE WHEN time_worked > 40 THEN time_worked - 40 ELSE 0 END) as over,
+	SUM(CASE WHEN time_worked > 40 THEN 40 ELSE time_worked END) as reg,
+	SUM(training_worked) as training_worked,
+	SUM(open_shifts) as open_shifts,
+	SUM(supervisor_worked) as supervisor_worked,
+	week_started
+	FROM
+	(
+		SELECT
+		SUM (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) as time_worked,
+		date_trunc('week', data.date) as week_started,
+		SUM(CASE WHEN is_type(data.type::text, '300'::text)
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as training_worked,
+		SUM((CASE WHEN is_type(data.type::text, '10000'::text) THEN
+			((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0 ELSE
+			0 END)) as supervisor_worked,
+		SUM(CASE WHEN eid = 0
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as open_shifts
+		FROM
+		assemble_schedule(DATE($P{startDate}), DATE($P{endDate}), 24) as data
+		LEFT JOIN employee ON employee.employee_id = data.eid
+		GROUP BY date_trunc('week', data.date), eid
+	) as data
+	GROUP BY week_started
+)  as louisiana_data ON louisiana_data.week_started = mydates.my_date
+LEFT JOIN
+(
+    SELECT
+	SUM(CASE WHEN time_worked > 40 THEN time_worked - 40 ELSE 0 END) as over,
+	SUM(CASE WHEN time_worked > 40 THEN 40 ELSE time_worked END) as reg,
+	SUM(training_worked) as training_worked,
+	SUM(open_shifts) as open_shifts,
+	SUM(supervisor_worked) as supervisor_worked,
+	week_started
+	FROM
+	(
+		SELECT
+		SUM (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) as time_worked,
+		date_trunc('week', data.date) as week_started,
+		SUM(CASE WHEN is_type(data.type::text, '300'::text)
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as training_worked,
+		SUM((CASE WHEN is_type(data.type::text, '10000'::text) THEN
+			((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0 ELSE
+			0 END)) as supervisor_worked,
+		SUM(CASE WHEN eid = 0
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as open_shifts
+		FROM
+		assemble_schedule(DATE($P{startDate}), DATE($P{endDate}), 47) as data
+		LEFT JOIN employee ON employee.employee_id = data.eid
+		GROUP BY date_trunc('week', data.date), eid
+	) as data
+	GROUP BY week_started
+)  as arlington_data ON arlington_data.week_started = mydates.my_date
+LEFT JOIN
+(
+    SELECT
+	SUM(CASE WHEN time_worked > 40 THEN time_worked - 40 ELSE 0 END) as over,
+	SUM(CASE WHEN time_worked > 40 THEN 40 ELSE time_worked END) as reg,
+	SUM(training_worked) as training_worked,
+	SUM(supervisor_worked) as supervisor_worked,
+	SUM(open_shifts) as open_shifts,
+	week_started
+	FROM
+	(
+		SELECT
+		SUM (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) as time_worked,
+		date_trunc('week', data.date) as week_started,
+		SUM(CASE WHEN is_type(data.type::text, '300'::text)
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as training_worked,
+		SUM((CASE WHEN is_type(data.type::text, '10000'::text) THEN
+			((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0 ELSE
+			0 END)) as supervisor_worked,
+		SUM(CASE WHEN eid = 0
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as open_shifts
+		FROM
+		assemble_schedule(DATE($P{startDate}), DATE($P{endDate}), 305) as data
+		LEFT JOIN employee ON employee.employee_id = data.eid
+		GROUP BY date_trunc('week', data.date), eid
+	) as data
+	GROUP BY week_started
+)  as north_houston_data ON north_houston_data.week_started = mydates.my_date
+LEFT JOIN
+(
+    SELECT
+	SUM(CASE WHEN time_worked > 40 THEN time_worked - 40 ELSE 0 END) as over,
+	SUM(CASE WHEN time_worked > 40 THEN 40 ELSE time_worked END) as reg,
+	SUM(training_worked) as training_worked,
+	SUM(supervisor_worked) as supervisor_worked,
+	SUM(open_shifts) as open_shifts,
+	week_started
+	FROM
+	(
+		SELECT
+		SUM (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) as time_worked,
+		date_trunc('week', data.date) as week_started,
+		SUM(CASE WHEN is_type(data.type::text, '300'::text)
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as training_worked,
+		SUM((CASE WHEN is_type(data.type::text, '10000'::text) THEN
+			((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0 ELSE
+			0 END)) as supervisor_worked,
+		SUM(CASE WHEN eid = 0
+			THEN (((CASE WHEN end_time < start_time THEN end_time + 1440 ELSE end_time END) - start_time) / 60.0) ELSE 0 END
+		) as open_shifts
+		FROM
+		assemble_schedule(DATE($P{startDate}), DATE($P{endDate}), 1679) as data
+		LEFT JOIN employee ON employee.employee_id = data.eid
+		GROUP BY date_trunc('week', data.date), eid
+	) as data
+	GROUP BY week_started
+)  as baltimore_data ON baltimore_data.week_started = mydates.my_date]]>
+	</queryString>
+	<field name="my_date" class="java.sql.Timestamp"/>
+	<field name="dallas_overtime" class="java.math.BigDecimal"/>
+	<field name="dallas_total_hours" class="java.math.BigDecimal"/>
+	<field name="dallas_training_worked" class="java.math.BigDecimal"/>
+	<field name="dallas_supervisor_worked" class="java.math.BigDecimal"/>
+	<field name="dallas_open_shifts" class="java.math.BigDecimal"/>
+	<field name="florida_overtime" class="java.math.BigDecimal"/>
+	<field name="florida_total_hours" class="java.math.BigDecimal"/>
+	<field name="florida_training_worked" class="java.math.BigDecimal"/>
+	<field name="florida_supervisor_worked" class="java.math.BigDecimal"/>
+	<field name="florida_open_shifts" class="java.math.BigDecimal"/>
+	<field name="san_antonio_overtime" class="java.math.BigDecimal"/>
+	<field name="san_antonio_total_hours" class="java.math.BigDecimal"/>
+	<field name="san_antonio_training_worked" class="java.math.BigDecimal"/>
+	<field name="san_antonio_open_shifts" class="java.math.BigDecimal"/>
+	<field name="san_antonio_supervisor_worked" class="java.math.BigDecimal"/>
+	<field name="south_houston_overtime" class="java.math.BigDecimal"/>
+	<field name="south_houston_total_hours" class="java.math.BigDecimal"/>
+	<field name="south_houston_training_worked" class="java.math.BigDecimal"/>
+	<field name="south_houston_supervisor_worked" class="java.math.BigDecimal"/>
+	<field name="south_houston_open_shifts" class="java.math.BigDecimal"/>
+	<field name="philadelphia_overtime" class="java.math.BigDecimal"/>
+	<field name="philadelphia_total_hours" class="java.math.BigDecimal"/>
+	<field name="philadelphia_training_worked" class="java.math.BigDecimal"/>
+	<field name="philadelphia_open_shifts" class="java.math.BigDecimal"/>
+	<field name="philadelphia_supervisor_worked" class="java.math.BigDecimal"/>
+	<field name="mississippi_overtime" class="java.math.BigDecimal"/>
+	<field name="mississippi_total_hours" class="java.math.BigDecimal"/>
+	<field name="mississippi_training_worked" class="java.math.BigDecimal"/>
+	<field name="mississippi_supervisor_worked" class="java.math.BigDecimal"/>
+	<field name="mississippi_open_shifts" class="java.math.BigDecimal"/>
+	<field name="louisiana_overtime" class="java.math.BigDecimal"/>
+	<field name="louisiana_total_hours" class="java.math.BigDecimal"/>
+	<field name="louisiana_training_worked" class="java.math.BigDecimal"/>
+	<field name="louisiana_open_shifts" class="java.math.BigDecimal"/>
+	<field name="louisiana_supervisor_worked" class="java.math.BigDecimal"/>
+	<field name="arlington_overtime" class="java.math.BigDecimal"/>
+	<field name="arlington_total_hours" class="java.math.BigDecimal"/>
+	<field name="arlington_training_worked" class="java.math.BigDecimal"/>
+	<field name="arlington_supervisor_worked" class="java.math.BigDecimal"/>
+	<field name="arlington_open_shifts" class="java.math.BigDecimal"/>
+	<field name="north_houston_overtime" class="java.math.BigDecimal"/>
+	<field name="north_houston_total_hours" class="java.math.BigDecimal"/>
+	<field name="north_houston_training_worked" class="java.math.BigDecimal"/>
+	<field name="north_houston_supervisor_worked" class="java.math.BigDecimal"/>
+	<field name="north_houston_open_shifts" class="java.math.BigDecimal"/>
+	<field name="baltimore_overtime" class="java.math.BigDecimal"/>
+	<field name="baltimore_total_hours" class="java.math.BigDecimal"/>
+	<field name="baltimore_training_worked" class="java.math.BigDecimal"/>
+	<field name="baltimore_supervisor_worked" class="java.math.BigDecimal"/>
+	<field name="baltimore_open_shifts" class="java.math.BigDecimal"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="66" splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="121" splitType="Stretch">
+			<staticText>
+				<reportElement x="119" y="14" width="110" height="20"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Arlington]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="199" y="34" width="30" height="20" backcolor="#FECECE"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="119" y="34" width="40" height="87"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="159" y="54" width="40" height="22"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Training]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="159" y="34" width="40" height="20" backcolor="#FECECE"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Overtime]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="199" y="54" width="30" height="22"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="309" y="34" width="30" height="20" backcolor="#FECECE"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="229" y="14" width="110" height="20"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Baltimore]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="229" y="34" width="40" height="87"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="269" y="54" width="40" height="22"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Training]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="269" y="34" width="40" height="20" backcolor="#FECECE"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Overtime]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="309" y="54" width="30" height="22"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="419" y="54" width="30" height="22"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="339" y="34" width="40" height="87"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="339" y="14" width="110" height="20"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Dallas]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="419" y="34" width="30" height="20" backcolor="#FECECE"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="379" y="54" width="40" height="22"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Training]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="379" y="34" width="40" height="20" backcolor="#FECECE"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Overtime]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="599" y="54" width="40" height="22"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Training]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="599" y="34" width="40" height="20" backcolor="#FECECE"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Overtime]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="639" y="34" width="30" height="20" backcolor="#FECECE"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="559" y="34" width="40" height="87"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="639" y="54" width="30" height="22"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="559" y="14" width="110" height="20"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[North Houston]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="749" y="54" width="30" height="22"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="669" y="14" width="110" height="20"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[South Houston]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="709" y="54" width="40" height="22"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Training]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="669" y="34" width="40" height="87"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="749" y="34" width="30" height="20" backcolor="#FECECE"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="709" y="34" width="40" height="20" backcolor="#FECECE"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Overtime]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="159" y="98" width="40" height="23"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Open Shifts]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="269" y="98" width="40" height="23"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Open Shifts]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="379" y="98" width="40" height="23"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Open Shifts]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="599" y="98" width="40" height="23"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Open Shifts]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="709" y="98" width="40" height="23"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Open Shifts]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="749" y="98" width="30" height="23"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="639" y="98" width="30" height="23"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="419" y="98" width="30" height="23"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="199" y="98" width="30" height="23"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="309" y="98" width="30" height="23"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="379" y="76" width="40" height="22"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Non Bill Hrs]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="419" y="76" width="30" height="22"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="159" y="76" width="40" height="22"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Non Bill Hrs]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="199" y="76" width="30" height="22"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="269" y="76" width="40" height="22"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Non Bill Hrs]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="309" y="76" width="30" height="22"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="639" y="76" width="30" height="22"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="599" y="76" width="40" height="22"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Non Bill Hrs]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="749" y="76" width="30" height="22"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="709" y="76" width="40" height="22"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Non Bill Hrs]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="529" y="34" width="30" height="20" backcolor="#FECECE"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="489" y="34" width="40" height="20" backcolor="#FECECE"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Overtime]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="449" y="34" width="40" height="87"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="449" y="14" width="110" height="20"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Florida]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="489" y="76" width="40" height="22"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Non Bill Hrs]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="529" y="76" width="30" height="22"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="489" y="98" width="40" height="23"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Open Shifts]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="529" y="99" width="30" height="22"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="529" y="54" width="30" height="23"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="489" y="55" width="40" height="22"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Training]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="83" splitType="Stretch">
+			<textField pattern="MM/dd/yy">
+				<reportElement x="69" y="0" width="50" height="83"/>
+				<box leftPadding="4">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{my_date}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="669" y="0" width="40" height="83"/>
+				<box leftPadding="4">
+					<topPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{south_houston_total_hours}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement mode="Opaque" x="709" y="0" width="40" height="22" backcolor="#FECECE"/>
+				<box leftPadding="4">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{south_houston_overtime}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement mode="Opaque" x="379" y="0" width="40" height="22" backcolor="#FECECE"/>
+				<box leftPadding="4">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{dallas_overtime}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="339" y="0" width="40" height="83"/>
+				<box leftPadding="4">
+					<topPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{dallas_total_hours}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement mode="Opaque" x="749" y="0" width="30" height="22" backcolor="#FECECE"/>
+				<box leftPadding="4">
+					<topPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{south_houston_overtime}.floatValue() /
+$F{south_houston_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement mode="Opaque" x="419" y="0" width="30" height="22" backcolor="#FECECE"/>
+				<box leftPadding="4">
+					<topPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{dallas_overtime}.floatValue() /
+$F{dallas_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="709" y="22" width="40" height="20"/>
+				<box leftPadding="4">
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{south_houston_training_worked}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="379" y="22" width="40" height="20"/>
+				<box leftPadding="4">
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{dallas_training_worked}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="119" y="0" width="40" height="83"/>
+				<box leftPadding="4">
+					<topPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{arlington_total_hours}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement mode="Opaque" x="199" y="0" width="30" height="22" backcolor="#FECECE"/>
+				<box leftPadding="4">
+					<topPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{arlington_overtime}.floatValue() /
+
+$F{arlington_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement mode="Opaque" x="159" y="0" width="40" height="22" backcolor="#FECECE"/>
+				<box leftPadding="4">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{arlington_overtime}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement mode="Opaque" x="269" y="0" width="40" height="22" backcolor="#FECECE"/>
+				<box leftPadding="4">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{baltimore_overtime}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="269" y="22" width="40" height="20"/>
+				<box leftPadding="4">
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{baltimore_training_worked}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement mode="Opaque" x="309" y="0" width="30" height="22" backcolor="#FECECE"/>
+				<box leftPadding="4">
+					<topPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{baltimore_overtime}.floatValue() /
+
+$F{baltimore_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="229" y="0" width="40" height="83"/>
+				<box leftPadding="4">
+					<topPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{baltimore_total_hours}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement mode="Opaque" x="599" y="0" width="40" height="22" backcolor="#FECECE"/>
+				<box leftPadding="4">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{north_houston_overtime}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="599" y="22" width="40" height="20"/>
+				<box leftPadding="4">
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{north_houston_training_worked}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement mode="Opaque" x="639" y="0" width="30" height="22" backcolor="#FECECE"/>
+				<box leftPadding="4">
+					<topPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{north_houston_overtime}.floatValue() /
+
+$F{north_houston_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="159" y="22" width="40" height="20"/>
+				<box leftPadding="4">
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{arlington_training_worked}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement x="199" y="22" width="30" height="20"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{arlington_training_worked}.floatValue() /
+
+$F{arlington_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement x="309" y="22" width="30" height="20"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{baltimore_training_worked}.floatValue() /
+
+$F{baltimore_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement x="419" y="22" width="30" height="20"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{dallas_training_worked}.floatValue() /
+$F{dallas_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement x="639" y="22" width="30" height="20"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{north_houston_training_worked}.floatValue() /
+
+$F{north_houston_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement x="749" y="22" width="30" height="20"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{south_houston_training_worked}.floatValue() /
+$F{south_houston_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="159" y="62" width="40" height="21"/>
+				<box leftPadding="4">
+					<bottomPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{arlington_open_shifts}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement x="199" y="62" width="30" height="21"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{arlington_open_shifts}.floatValue() /
+
+$F{arlington_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="269" y="62" width="40" height="21"/>
+				<box leftPadding="4">
+					<bottomPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{baltimore_open_shifts}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement x="309" y="63" width="30" height="20"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{baltimore_open_shifts}.floatValue() /
+
+$F{baltimore_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="379" y="62" width="40" height="21"/>
+				<box leftPadding="4">
+					<bottomPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{dallas_open_shifts}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement x="419" y="63" width="30" height="20"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{dallas_open_shifts}.floatValue() /
+$F{dallas_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="599" y="62" width="40" height="21"/>
+				<box leftPadding="4">
+					<bottomPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{north_houston_open_shifts}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement x="639" y="62" width="30" height="21"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{north_houston_open_shifts}.floatValue() /
+
+$F{north_houston_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="709" y="62" width="40" height="21"/>
+				<box leftPadding="4">
+					<bottomPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{south_houston_open_shifts}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement x="749" y="62" width="30" height="21"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{south_houston_open_shifts}.floatValue() /
+$F{south_houston_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="379" y="42" width="40" height="21"/>
+				<box leftPadding="4">
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{dallas_supervisor_worked}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement x="419" y="42" width="30" height="21"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{dallas_supervisor_worked}.floatValue() /
+$F{dallas_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="159" y="42" width="40" height="20"/>
+				<box leftPadding="4">
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{arlington_supervisor_worked}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement x="199" y="42" width="30" height="20"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{arlington_supervisor_worked}.floatValue() /
+
+$F{arlington_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement x="309" y="42" width="30" height="21"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{baltimore_supervisor_worked}.floatValue() /
+
+$F{baltimore_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="269" y="42" width="40" height="21"/>
+				<box leftPadding="4">
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{baltimore_supervisor_worked}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement x="639" y="42" width="30" height="20"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{north_houston_supervisor_worked}.floatValue() /
+
+$F{north_houston_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="599" y="42" width="40" height="20"/>
+				<box leftPadding="4">
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{north_houston_supervisor_worked}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="709" y="42" width="40" height="20"/>
+				<box leftPadding="4">
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{south_houston_supervisor_worked}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement x="749" y="42" width="30" height="20"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{south_houston_supervisor_worked}.floatValue() /
+
+$F{north_houston_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="489" y="62" width="40" height="21"/>
+				<box leftPadding="4">
+					<bottomPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{florida_open_shifts}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement x="529" y="62" width="30" height="21"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{florida_open_shifts}.floatValue() /
+$F{florida_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="449" y="0" width="40" height="83"/>
+				<box leftPadding="4">
+					<topPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{florida_total_hours}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="489" y="41" width="40" height="21"/>
+				<box leftPadding="4">
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{florida_supervisor_worked}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="489" y="21" width="40" height="20"/>
+				<box leftPadding="4">
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{florida_training_worked}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement mode="Opaque" x="489" y="0" width="40" height="22" backcolor="#FECECE"/>
+				<box leftPadding="4">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{florida_overtime}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement mode="Opaque" x="529" y="0" width="30" height="22" backcolor="#FECECE"/>
+				<box leftPadding="4">
+					<topPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{florida_overtime}.floatValue() /
+$F{florida_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement x="529" y="41" width="30" height="21"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{florida_supervisor_worked}.floatValue() /
+$F{florida_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00">
+				<reportElement x="559" y="0" width="40" height="83"/>
+				<box leftPadding="4">
+					<topPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{north_houston_total_hours}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00%">
+				<reportElement x="529" y="22" width="30" height="20"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(
+$F{florida_training_worked}.floatValue() /
+$F{florida_total_hours}.floatValue()
+)]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="20" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

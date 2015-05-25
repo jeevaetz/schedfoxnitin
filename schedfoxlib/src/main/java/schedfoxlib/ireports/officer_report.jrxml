@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="officer_report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="249"/>
+	<parameter name="startDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2015-03-15"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="endDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2015-04-01"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="selectedClients" class="java.util.List">
+		<defaultValueExpression><![CDATA[new ArrayList(
+    Arrays.asList(5323)
+)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="schema" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="logo" class="java.io.InputStream"/>
+	<queryString>
+		<![CDATA[SELECT * FROM
+(
+	SELECT
+	1 as action_type, waypoint_name as action_subject, employee_first_name || ' ' || employee_last_name as action_user_name,
+	(SELECT date_scanned::timestamp at time zone(current_setting('TIMEZONE')) AT time zone (SELECT timezone FROM control_db.branch WHERE branch.branch_id = client.branch_id LIMIT 1)) as action_time, '' as action_additional_data, client_name as action_client
+	FROM
+	$P!{schema}.client_waypoint
+	INNER JOIN $P!{schema}.client_waypoint_scan ON client_waypoint_scan.client_waypoint_id = client_waypoint.client_waypoint_id
+	INNER JOIN $P!{schema}.client ON client.client_id = client_waypoint.client_id
+	INNER JOIN $P!{schema}.employee ON employee.employee_id = client_waypoint_scan.user_id
+	WHERE
+	$X{IN, client_waypoint.client_id, selectedClients} AND
+	DATE(date_scanned) BETWEEN DATE($P{startDate}) AND DATE($P{endDate})
+) as waypoint_data
+UNION
+(
+	SELECT
+	2 as action_type, '' as action_subject, employee_first_name || ' ' || employee_last_name as action_user_name,
+	(SELECT entered_on::timestamp at time zone(current_setting('TIMEZONE')) AT time zone (SELECT timezone FROM control_db.branch WHERE branch.branch_id = client.branch_id LIMIT 1)) as action_time, officer_daily_report_text.text as action_additional_data, client_name as action_client
+	FROM
+	$P!{schema}.officer_daily_report
+	INNER JOIN $P!{schema}.officer_daily_report_text
+		ON officer_daily_report_text.officer_daily_report_id = officer_daily_report.officer_daily_report_id
+	INNER JOIN $P!{schema}.client ON client.client_id = officer_daily_report.client_id
+	INNER JOIN $P!{schema}.employee ON employee.employee_id = officer_daily_report.employee_id
+	WHERE
+	$X{IN, officer_daily_report.client_id, selectedClients} AND
+	DATE(entered_on) BETWEEN DATE($P{startDate}) AND DATE($P{endDate})
+)
+UNION
+(
+	SELECT
+	3 as action_type, report_type as action_subject, employee_first_name || ' ' || employee_last_name as action_user_name,
+	(SELECT date_entered::timestamp at time zone(current_setting('TIMEZONE')) AT time zone (SELECT timezone FROM control_db.branch WHERE branch.branch_id = client.branch_id LIMIT 1)) as action_time, incident_report.incident as action_additional_data, client_name as action_client
+	FROM
+	$P!{schema}.incident_report
+	INNER JOIN $P!{schema}.incident_report_type ON incident_report_type.incident_report_type_id = incident_report.incident_report_type_id
+	INNER JOIN $P!{schema}.client ON client.client_id = incident_report.client_id
+	INNER JOIN $P!{schema}.employee ON employee.employee_id = incident_report.employee_id
+	WHERE
+	$X{IN, incident_report.client_id, selectedClients} AND
+	DATE(date_entered) BETWEEN DATE($P{startDate}) AND DATE($P{endDate})
+)
+UNION
+(
+	SELECT
+	4 as action_type, mobile_form_name as action_subject, employee_first_name || ' ' || employee_last_name as action_user_name,
+	(SELECT date_entered::timestamp at time zone(current_setting('TIMEZONE')) AT time zone (SELECT timezone FROM control_db.branch WHERE branch.branch_id = client.branch_id LIMIT 1)) as action_time, '' as action_additional_data, client_name as action_client
+	FROM
+	$P!{schema}.mobile_forms
+	INNER JOIN $P!{schema}.mobile_form_fillout ON mobile_form_fillout.mobile_form_id = mobile_forms.mobile_forms_id
+	INNER JOIN $P!{schema}.client ON client.client_id = mobile_form_fillout.client_id
+	INNER JOIN $P!{schema}.employee ON employee.employee_id = mobile_form_fillout.employee_id
+	WHERE
+	$X{IN, mobile_form_fillout.client_id, selectedClients} AND
+	DATE(mobile_form_fillout.date_entered) BETWEEN DATE($P{startDate}) AND DATE($P{endDate})
+)
+UNION
+(
+	SELECT
+	5 as action_type, 'Logged In' as action_subject, employee_first_name || ' ' || employee_last_name as action_user_name,
+	(SELECT logged_in::timestamp at time zone(current_setting('TIMEZONE')) AT time zone (SELECT timezone FROM control_db.branch WHERE branch.branch_id = client.branch_id LIMIT 1)) as action_time, '' as action_additional_data, client_name as action_client
+	FROM
+	$P!{schema}.officer_daily_report
+	INNER JOIN $P!{schema}.client ON client.client_id = officer_daily_report.client_id
+	INNER JOIN $P!{schema}.employee ON employee.employee_id = officer_daily_report.employee_id
+	WHERE
+	$X{IN, officer_daily_report.client_id, selectedClients} AND
+	DATE(logged_in) BETWEEN DATE($P{startDate}) AND DATE($P{endDate})
+)
+UNION
+(
+	SELECT
+	6 as action_type, 'Logged Out' as action_subject, employee_first_name || ' ' || employee_last_name as action_user_name,
+	(SELECT logged_out::timestamp at time zone(current_setting('TIMEZONE')) AT time zone (SELECT timezone FROM control_db.branch WHERE branch.branch_id = client.branch_id LIMIT 1)) as action_time, '' as action_additional_data, client_name as action_client
+	FROM
+	$P!{schema}.officer_daily_report
+	INNER JOIN $P!{schema}.client ON client.client_id = officer_daily_report.client_id
+	INNER JOIN $P!{schema}.employee ON employee.employee_id = officer_daily_report.employee_id
+	WHERE
+	$X{IN, officer_daily_report.client_id, selectedClients} AND
+	DATE(logged_out) BETWEEN DATE($P{startDate}) AND DATE($P{endDate})
+)
+ORDER BY action_client, action_time ASC]]>
+	</queryString>
+	<field name="action_type" class="java.lang.Integer"/>
+	<field name="action_subject" class="java.lang.String"/>
+	<field name="action_user_name" class="java.lang.String"/>
+	<field name="action_time" class="java.sql.Timestamp"/>
+	<field name="action_additional_data" class="java.lang.String"/>
+	<field name="action_client" class="java.lang.String"/>
+	<group name="clientName" isStartNewPage="true">
+		<groupExpression><![CDATA[$F{action_client}]]></groupExpression>
+		<groupHeader>
+			<band height="50">
+				<textField>
+					<reportElement x="0" y="14" width="555" height="36"/>
+					<textElement>
+						<font size="24" isBold="true" isItalic="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{action_client}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band/>
+		</groupFooter>
+	</group>
+	<group name="action_type">
+		<groupExpression><![CDATA[$F{action_type}]]></groupExpression>
+		<groupHeader>
+			<band height="25">
+				<printWhenExpression><![CDATA[new Boolean($F{action_type}.intValue() == 1)]]></printWhenExpression>
+				<textField>
+					<reportElement x="0" y="8" width="136" height="17" forecolor="#006633"/>
+					<textElement>
+						<font size="12" isBold="true"/>
+					</textElement>
+                    <textFieldExpression class="java.lang.String"><![CDATA[$R{dateScanned}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="136" y="8" width="225" height="17" forecolor="#006633"/>
+					<textElement>
+						<font size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$R{waypointName}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="361" y="8" width="194" height="17" forecolor="#006633"/>
+					<textElement>
+						<font size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$R{officerName}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band/>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="70" splitType="Stretch">
+			<image hAlign="Center" onErrorType="Blank">
+				<reportElement x="0" y="0" width="555" height="70"/>
+				<imageExpression class="java.io.InputStream"><![CDATA[$P{logo}]]></imageExpression>
+			</image>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="14" splitType="Stretch">
+			<printWhenExpression><![CDATA[new Boolean($F{action_type}.intValue() == 1)]]></printWhenExpression>
+			<textField pattern="MM/dd/yyyy HHmm">
+				<reportElement x="0" y="0" width="136" height="14" forecolor="#006633"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{action_time}]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement x="136" y="0" width="225" height="14" forecolor="#006633"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{action_subject}]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement x="361" y="0" width="194" height="14" forecolor="#006633"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{action_user_name}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="49">
+			<printWhenExpression><![CDATA[new Boolean($F{action_type}.intValue() == 2)]]></printWhenExpression>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="11" y="22" width="544" height="22" forecolor="#000099"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{action_additional_data}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="136" y="5" width="225" height="17" forecolor="#000099"/>
+				<textElement>
+					<font size="12" isBold="true" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[Daily Report Text Entered]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="361" y="5" width="194" height="17" forecolor="#000099"/>
+				<textElement>
+					<font size="12" isBold="true" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{officer} + " " + $F{action_user_name}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/dd/yyyy HHmm">
+				<reportElement x="11" y="5" width="125" height="17" forecolor="#000099"/>
+				<textElement>
+					<font size="12" isBold="true" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{action_time}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="51">
+			<printWhenExpression><![CDATA[new Boolean($F{action_type}.intValue() == 3)]]></printWhenExpression>
+			<textField>
+				<reportElement x="136" y="4" width="225" height="20" forecolor="#FF6600"/>
+				<textElement>
+					<font size="12" isBold="true" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{incidentOccurred} + " - " + $F{action_subject}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="11" y="24" width="544" height="22" forecolor="#FF6600"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{action_additional_data}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/dd/yyyy HHmm">
+				<reportElement x="11" y="4" width="125" height="20" forecolor="#FF6600"/>
+				<textElement>
+					<font size="12" isBold="true" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{action_time}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="361" y="4" width="194" height="20" forecolor="#FF6600"/>
+				<textElement>
+					<font size="12" isBold="true" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{officer} + " "  + $F{action_user_name}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="50">
+			<printWhenExpression><![CDATA[new Boolean($F{action_type}.intValue() == 4)]]></printWhenExpression>
+			<textField>
+				<reportElement x="136" y="4" width="225" height="20" forecolor="#999900"/>
+				<textElement>
+					<font size="12" isBold="true" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{formFilledOut} + " - " + $F{action_subject}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="11" y="24" width="544" height="22" forecolor="#999900"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{action_additional_data}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/dd/yyyy HHmm">
+				<reportElement x="11" y="4" width="125" height="20" forecolor="#999900"/>
+				<textElement>
+					<font size="12" isBold="true" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{action_time}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="361" y="4" width="194" height="20" forecolor="#999900"/>
+				<textElement>
+					<font size="12" isBold="true" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{officer} + " "  + $F{action_user_name}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="23">
+			<printWhenExpression><![CDATA[new Boolean($F{action_type}.intValue() == 5)]]></printWhenExpression>
+			<textField>
+				<reportElement x="361" y="3" width="194" height="17" forecolor="#000099"/>
+				<textElement>
+					<font size="12" isBold="true" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{officer} + " "  + $F{action_user_name}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="136" y="3" width="225" height="17" forecolor="#000099"/>
+				<textElement>
+					<font size="12" isBold="true" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[Logged In]]></text>
+			</staticText>
+			<textField pattern="MM/dd/yyyy HHmm">
+				<reportElement x="11" y="3" width="125" height="17" forecolor="#000099"/>
+				<textElement>
+					<font size="12" isBold="true" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{action_time}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="26">
+			<printWhenExpression><![CDATA[new Boolean($F{action_type}.intValue() == 6)]]></printWhenExpression>
+			<textField>
+				<reportElement x="361" y="3" width="194" height="17" forecolor="#000099"/>
+				<textElement>
+					<font size="12" isBold="true" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{officer} + " " + $F{action_user_name}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="136" y="3" width="225" height="17" forecolor="#000099"/>
+				<textElement>
+					<font size="12" isBold="true" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[Logged Out]]></text>
+			</staticText>
+			<textField pattern="MM/dd/yyyy HHmm">
+				<reportElement x="11" y="3" width="125" height="17" forecolor="#000099"/>
+				<textElement>
+					<font size="12" isBold="true" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{action_time}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="15" splitType="Stretch">
+			<textField>
+				<reportElement x="361" y="0" width="194" height="15"/>
+				<textElement>
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{action_client}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/dd/yyyy HH.mm">
+				<reportElement x="11" y="0" width="89" height="15"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

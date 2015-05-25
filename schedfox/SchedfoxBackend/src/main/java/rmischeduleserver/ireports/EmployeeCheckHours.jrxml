@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="EmployeeCheckHours" pageWidth="220" pageHeight="400" columnWidth="220" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="employee_payment_id" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[18315]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT * FROM
+champion_db.employee_payment_hours
+WHERE
+employee_payment_id = $P{employee_payment_id}]]>
+	</queryString>
+	<field name="employee_payment_hour_id" class="java.lang.Integer"/>
+	<field name="employee_payment_id" class="java.lang.Integer"/>
+	<field name="hour_type" class="java.lang.String"/>
+	<field name="regular_hrs" class="java.math.BigDecimal"/>
+	<field name="overtime_hrs" class="java.math.BigDecimal"/>
+	<field name="regular_pay" class="java.math.BigDecimal"/>
+	<field name="overtime_pay" class="java.math.BigDecimal"/>
+	<variable name="tot_hours" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal($F{regular_hrs}.doubleValue() + $F{overtime_hrs}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="tot_pay" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[new BigDecimal($F{regular_pay}.doubleValue() + $F{overtime_pay}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="total_hours" class="java.math.BigDecimal" resetType="None">
+		<variableExpression><![CDATA[$V{tot_hours}]]></variableExpression>
+	</variable>
+	<variable name="total_pay" class="java.math.BigDecimal" resetType="None">
+		<variableExpression><![CDATA[$V{tot_pay}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="67" splitType="Stretch">
+			<textField pattern="###0.00">
+				<reportElement x="90" y="20" width="45" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{regular_hrs}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="135" y="20" width="85" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{regular_pay}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="28" y="20" width="62" height="20"/>
+				<textElement textAlignment="Left">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Hours]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="28" y="40" width="62" height="20"/>
+				<textElement textAlignment="Left">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Overtime]]></text>
+			</staticText>
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="135" y="40" width="85" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{overtime_pay}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0">
+				<reportElement x="90" y="40" width="45" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{overtime_hrs}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="0" width="220" height="20"/>
+				<textElement>
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{hour_type}.equals("R") ? "Regular Hours" : $F{hour_type}.equals("H") ? "Holiday Hours" : "Special Hours"]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

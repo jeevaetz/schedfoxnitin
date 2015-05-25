@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD JasperReport//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="employee_termination_report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<style name="deduction_style" isDefault="false">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[new Boolean($F{dedamnt}.doubleValue() > 0.0)]]></conditionExpression>
+			<style isDefault="false" style="deduction_style" forecolor="#CC0000"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="branch_id" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[new Integer(-1)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="start_date" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2011-05-01"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="end_date" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2011-05-08"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="schema" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT employee.*, branch.*, employee_deductions.*, employee_deduction_types.*,
+COALESCE((
+	SELECT SUM(balance)
+	FROM $P!{schema}.employee_deductions
+	INNER JOIN $P!{schema}.employee_deduction_types ON
+	employee_deduction_types.employee_deduction_type_id = employee_deductions.employee_deduction_type_id
+	WHERE
+	employee_deductions.employee_id = employee.employee_id AND
+	employee_deduction_types.pay_back_on_term = true
+), 0) as dedamnt
+FROM
+$P!{schema}.employee
+INNER JOIN control_db.branch ON branch.branch_id = employee.branch_id
+LEFT JOIN $P!{schema}.employee_deductions ON employee_deductions.employee_id = employee.employee_id
+	AND balance > 0
+LEFT JOIN $P!{schema}.employee_deduction_types ON
+	employee_deduction_types.employee_deduction_type_id =
+		employee_deductions.employee_deduction_type_id
+WHERE
+(branch.branch_id = $P{branch_id} OR $P{branch_id} = -1) AND
+employee.employee_is_deleted = 1 AND employee.employee_term_date BETWEEN DATE($P{start_date}) AND DATE($P{end_date}) AND
+(employee_deduction_types.pay_back_on_term = true OR employee_deduction_types.pay_back_on_term IS NULL)
+ORDER BY branch_name, employee_last_name ASC, employee_first_name ASC]]>
+	</queryString>
+	<field name="employee_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="branch_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_first_name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_last_name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_middle_initial" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_ssn" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_address" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_address2" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_city" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_state" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_zip" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_phone" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_phone2" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_cell" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_pager" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_email" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_hire_date" class="java.sql.Date">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_term_date" class="java.sql.Date">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_is_deleted" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_last_updated" class="java.sql.Timestamp">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_type" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="web_login" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="web_pw" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_birthdate" class="java.sql.Date">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_login" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_password" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="is_login_available" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_type_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_email2" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="email_messaging" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="sms_messaging" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_workhrs_pweek" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="accrued_vacation" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="branch_name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="branch_management_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="timezone" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_deduction_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="amount" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="balance" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="employee_deduction_type_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="one_time" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="description" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="usked_type_code" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="pay_back_on_term" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="dedamnt" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<variable name="emp_count" class="java.lang.Integer" resetType="Group" resetGroup="employee_group" calculation="Count">
+		<variableExpression><![CDATA[$F{branch_id}]]></variableExpression>
+	</variable>
+	<variable name="ded_amount_total" class="java.math.BigDecimal" resetType="Group" resetGroup="branch_name" calculation="Sum">
+		<variableExpression><![CDATA[$F{balance}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<group name="branch_name">
+		<groupExpression><![CDATA[$F{branch_name}]]></groupExpression>
+		<groupHeader>
+			<band height="52">
+				<textField hyperlinkType="None">
+					<reportElement x="0" y="0" width="256" height="32"/>
+					<textElement>
+						<font size="18"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{branch_name}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="32" width="214" height="20"/>
+					<textElement>
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Employee Name]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="214" y="32" width="121" height="20"/>
+					<textElement>
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Termination Date]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="335" y="32" width="205" height="20"/>
+					<textElement>
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Amount Outstanding in Deductions]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="26">
+				<staticText>
+					<reportElement x="378" y="5" width="76" height="20"/>
+					<textElement>
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Amount Outstanding:]]></text>
+				</staticText>
+				<textField pattern="¤ #,##0.00" hyperlinkType="None">
+					<reportElement x="454" y="5" width="86" height="20"/>
+					<textElement textAlignment="Right">
+						<font size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{ded_amount_total}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="employee_group">
+		<groupExpression><![CDATA[$F{employee_id}]]></groupExpression>
+		<groupHeader>
+			<band height="25">
+				<textField hyperlinkType="None">
+					<reportElement style="deduction_style" x="0" y="0" width="214" height="20"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{employee_first_name} + " " + $F{employee_last_name}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM/dd/yyyy" hyperlinkType="None">
+					<reportElement style="deduction_style" x="214" y="0" width="121" height="20"/>
+					<textElement/>
+					<textFieldExpression class="java.util.Date"><![CDATA[$F{employee_term_date}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="354" y="0" width="100" height="20">
+						<printWhenExpression><![CDATA[new Boolean($F{dedamnt}.doubleValue() == 0.0)]]></printWhenExpression>
+					</reportElement>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[Total Due]]></text>
+				</staticText>
+				<textField pattern="¤ #,##0.00" hyperlinkType="None">
+					<reportElement style="deduction_style" x="454" y="1" width="86" height="20">
+						<printWhenExpression><![CDATA[new Boolean($F{dedamnt}.doubleValue() == 0.0)]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{dedamnt} == null ? new BigDecimal(0) : $F{dedamnt}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="22">
+				<printWhenExpression><![CDATA[new Boolean($F{balance}.doubleValue() > 0.0)]]></printWhenExpression>
+				<textField pattern="¤ #,##0.00" hyperlinkType="None">
+					<reportElement style="deduction_style" x="454" y="0" width="86" height="20">
+						<printWhenExpression><![CDATA[new Boolean($F{dedamnt}.doubleValue() > 0.0)]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{dedamnt} == null ? new BigDecimal(0) : $F{dedamnt}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement style="deduction_style" x="354" y="0" width="100" height="20">
+						<printWhenExpression><![CDATA[new Boolean($F{dedamnt}.doubleValue() > 0.0)]]></printWhenExpression>
+					</reportElement>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[Total Due]]></text>
+				</staticText>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="40">
+			<staticText>
+				<reportElement x="0" y="0" width="555" height="36"/>
+				<textElement>
+					<font size="22"/>
+				</textElement>
+				<text><![CDATA[Employee Terminations and Outstanding Deductions]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<columnHeader>
+		<band/>
+	</columnHeader>
+	<detail>
+		<band height="25">
+			<printWhenExpression><![CDATA[new Boolean($F{balance}.doubleValue() > 0.0)]]></printWhenExpression>
+			<textField hyperlinkType="None">
+				<reportElement style="deduction_style" x="354" y="0" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{description}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" hyperlinkType="None">
+				<reportElement style="deduction_style" x="454" y="2" width="86" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{balance}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band/>
+	</pageFooter>
+	<summary>
+		<band height="29"/>
+	</summary>
+</jasperReport>

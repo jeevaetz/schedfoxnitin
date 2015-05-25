@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="invoice" pageWidth="612" pageHeight="792" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="style1" mode="Transparent" backcolor="#FFFFFF">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[new Boolean($V{PAGE_COUNT}.intValue() % 2 ==0)]]></conditionExpression>
+			<style mode="Opaque" backcolor="#E3E1E1"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="invoices" class="java.util.List">
+		<defaultValueExpression><![CDATA[new ArrayList()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="contact_name" class="java.lang.String"/>
+	<parameter name="company_name" class="java.lang.String"/>
+	<parameter name="address" class="java.lang.String"/>
+	<parameter name="csv" class="java.lang.String"/>
+	<parameter name="clients_count" class="java.lang.Integer"/>
+	<parameter name="employees_count" class="java.lang.Integer"/>
+	<queryString>
+		<![CDATA[SELECT * FROM control_db.management_client_invoice WHERE $X{IN,management_client_invoice_id,invoices}
+ORDER BY invoiced_on DESC]]>
+	</queryString>
+	<field name="management_client_invoice_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="management_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="amount_invoiced" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="invoiced_on" class="java.sql.Timestamp">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="amount_per_employee" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="total_employees" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="total_invoiced" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="weekly_charge" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="num_weeks" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<variable name="total_invoiced" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{total_invoiced}]]></variableExpression>
+	</variable>
+	<variable name="row_count" class="java.lang.Integer" calculation="Count"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="61" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="555" height="51" forecolor="#70859F"/>
+				<textElement textAlignment="Center">
+					<font size="36" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Schedfox Invoice]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="24" splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="217" splitType="Stretch">
+			<staticText>
+				<reportElement mode="Opaque" x="44" y="194" width="83" height="23" forecolor="#FFFFFF" backcolor="#4661B0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="Serif" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Quantity]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="485" y="194" width="87" height="23" forecolor="#FFFFFF" backcolor="#4661B0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="Serif" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="32" y="14" width="145" height="20"/>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{company_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="32" y="34" width="145" height="20"/>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{address}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="32" y="54" width="145" height="20"/>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{csv}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="410" y="14" width="145" height="20"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Schedfox"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="410" y="34" width="145" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["507 Apple St."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="410" y="54" width="145" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Joshua TX, 76058"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="410" y="74" width="145" height="20"/>
+				<textElement/>
+				<text><![CDATA[214-615-9100]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="EEEEE dd MMMMM yyyy">
+				<reportElement x="44" y="159" width="528" height="20"/>
+				<textElement textAlignment="Center">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Month of " + new java.text.SimpleDateFormat("MMMMM").format($F{invoiced_on})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="410" y="194" width="75" height="23" forecolor="#FFFFFF" backcolor="#4661B0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="Serif" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Subtotal]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="127" y="194" width="283" height="23" forecolor="#FFFFFF" backcolor="#4661B0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="Serif" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Description]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="182" splitType="Stretch">
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="485" y="96" width="87" height="25"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{total_invoiced}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="style1" x="485" y="25" width="87" height="25"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00">
+				<reportElement style="style1" mode="Opaque" x="485" y="0" width="87" height="25" backcolor="#EAEAEA"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{amount_invoiced}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00">
+				<reportElement style="style1" mode="Opaque" x="485" y="50" width="87" height="46" backcolor="#EAEAEA"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(($F{total_employees}.intValue() - 25 > 0 ? $F{total_employees}.intValue() - 25 : 0) * $F{amount_per_employee}.floatValue())]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="44" y="0" width="83" height="25" backcolor="#EAEAEA"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[4]]></text>
+			</staticText>
+			<textField>
+				<reportElement mode="Opaque" x="127" y="0" width="283" height="25" backcolor="#EAEAEA"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Weekly charge of " + $F{weekly_charge}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Opaque" x="410" y="0" width="75" height="25" backcolor="#EAEAEA"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal($F{weekly_charge}.floatValue() * $F{num_weeks}.floatValue())]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="44" y="25" width="83" height="25"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{total_employees}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="127" y="25" width="283" height="25"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Total number of employees working end of " +  new java.text.SimpleDateFormat("MMMMM").format($F{invoiced_on})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="410" y="25" width="75" height="25"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Opaque" x="44" y="50" width="83" height="46" backcolor="#EAEAEA"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[($F{total_employees}.intValue() - 25 > 0 ? $F{total_employees}.intValue() - 25 : 0)]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Opaque" x="127" y="50" width="283" height="46" backcolor="#EAEAEA"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Number of employees over 25, times fee of " + $F{amount_per_employee}.floatValue()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Opaque" x="410" y="50" width="75" height="46" backcolor="#EAEAEA"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal(($F{total_employees}.intValue() - 25 > 0 ? $F{total_employees}.intValue() - 25 : 0) * $F{amount_per_employee}.floatValue())]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="410" y="96" width="75" height="25"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Amount]]></text>
+			</staticText>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Prevent"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="46" splitType="Stretch">
+			<staticText>
+				<reportElement mode="Opaque" x="17" y="10" width="527" height="25" backcolor="#CCCCCC"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Serif" size="12" isBold="true" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[Payment should be made by check to the address provided above]]></text>
+			</staticText>
+		</band>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

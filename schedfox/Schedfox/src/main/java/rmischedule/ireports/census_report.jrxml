@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="census_report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="startDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2013-03-08"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="endDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2013-05-10"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+branch_name,
+SUM(CASE WHEN hrs >= 30 THEN 1 ELSE 0 END) as fulltime,
+SUM(CASE WHEN hrs < 30 THEN 1 ELSE 0 END) as parttime,
+AVG(CASE WHEN hrs < 30 THEN NULL ELSE hrs END) as avg_full_time,
+COUNT(*) as totalemps,
+AVG(avg_age) as avg_age,
+AVG(paydata.amt) as amt
+FROM
+champion_db.employee
+LEFT JOIN
+(
+	SELECT
+	((SUM(champion_db.get_minutes_diff(start_time, end_time)) / 60.0) / (DATE('2013-04-10') - DATE('2013-02-10')) / 7) as hrs,
+	SUM(champion_db.get_minutes_diff(start_time, end_time)) / 60.0,
+	eid,
+	(DATE('2013-04-10') - DATE('2013-02-10')) / 7
+	FROM champion_db.assemble_schedule(DATE($P{startDate}), DATE($P{endDate}), -1) AS sched
+	GROUP BY eid
+) as data ON data.eid = employee.employee_id
+LEFT JOIN
+(
+	SELECT
+	AVG(extract(days FROM (NOW() - employee_birthdate)::interval) / 365) as avg_age,
+	employee_id as eid
+	FROM champion_db.employee
+	INNER JOIN
+	(
+		SELECT
+		eid
+		FROM champion_db.assemble_schedule(DATE($P{startDate}), DATE($P{endDate}), -1) AS sched
+		GROUP BY eid
+		HAVING (SUM(champion_db.get_minutes_diff(start_time, end_time)) / 60.0) >= 30
+	) AS fulltime ON fulltime.eid = employee.employee_id
+	WHERE employee_birthdate > DATE('1900-01-01') AND employee_birthdate IS NOT NULL AND employee_is_deleted != 1
+	GROUP BY employee_id
+) AS bday_data ON bday_data.eid = employee.employee_id
+LEFT JOIN
+(
+	SELECT
+	AVG((COALESCE(regular_pay, 0) + COALESCE(overtime_pay, 0)) / (COALESCE(regular_hrs, 0) + COALESCE(overtime_hrs, 0))) AS amt,
+	employee_payments.employee_id as eid
+	FROM champion_db.employee_payments
+	INNER JOIN champion_db.employee_payment_hours ON employee_payment_hours.employee_payment_id = employee_payments.employee_payments_id
+	INNER JOIN
+	(
+		SELECT
+		eid, branch_id
+		FROM champion_db.assemble_schedule(DATE($P{startDate}), DATE($P{endDate}), -1) AS sched
+		GROUP BY eid, branch_id
+		HAVING (SUM(champion_db.get_minutes_diff(start_time, end_time)) / 60.0) >= 30
+	) AS fulltime ON fulltime.eid = employee_payments.employee_id
+	WHERE employee_payments.date_of_trans > DATE(NOW() - interval '3 months')
+	GROUP BY employee_payments.employee_id
+) AS paydata ON paydata.eid = employee.employee_id
+INNER JOIN control_db.branch ON branch.branch_id = employee.branch_id
+WHERE branch_name NOT IN ('Test Data', 'Delaware', 'New Jersey')
+GROUP BY branch_name]]>
+	</queryString>
+	<field name="branch_name" class="java.lang.String"/>
+	<field name="fulltime" class="java.lang.Long"/>
+	<field name="parttime" class="java.lang.Long"/>
+	<field name="avg_full_time" class="java.math.BigDecimal"/>
+	<field name="totalemps" class="java.lang.Long"/>
+	<field name="avg_age" class="java.lang.Double"/>
+	<field name="amt" class="java.math.BigDecimal"/>
+	<variable name="full_time_totals" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{fulltime}]]></variableExpression>
+	</variable>
+	<variable name="part_time_totals" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{parttime}]]></variableExpression>
+	</variable>
+	<variable name="total_emp" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{totalemps}]]></variableExpression>
+	</variable>
+	<variable name="average_age" class="java.lang.Double" calculation="Average">
+		<variableExpression><![CDATA[$F{avg_age}]]></variableExpression>
+	</variable>
+	<variable name="average_pay" class="java.math.BigDecimal" calculation="Average">
+		<variableExpression><![CDATA[$F{amt}]]></variableExpression>
+	</variable>
+	<variable name="average_hrs" class="java.math.BigDecimal" calculation="Average">
+		<variableExpression><![CDATA[$V{average_hrs}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="66" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="555" height="41"/>
+				<textElement>
+					<font size="26"/>
+				</textElement>
+				<text><![CDATA[Census Report Test]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="29" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="9" width="100" height="20"/>
+				<textElement/>
+				<text><![CDATA[Branch Name]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="100" y="9" width="68" height="20"/>
+				<textElement/>
+				<text><![CDATA[Fulltime Emps]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="168" y="9" width="72" height="20"/>
+				<textElement/>
+				<text><![CDATA[Parttime Emps]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="240" y="9" width="60" height="20"/>
+				<textElement/>
+				<text><![CDATA[Total Emps]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="380" y="9" width="84" height="20"/>
+				<textElement/>
+				<text><![CDATA[Average Age (FT)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="464" y="9" width="91" height="20"/>
+				<textElement/>
+				<text><![CDATA[Average Pay (FT)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="300" y="9" width="80" height="20"/>
+				<textElement/>
+				<text><![CDATA[Average Hrs (FT)]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="23" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{branch_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="100" y="0" width="68" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{fulltime}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="168" y="0" width="72" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{parttime}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="240" y="0" width="60" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{totalemps}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0;###0-">
+				<reportElement x="380" y="0" width="84" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{avg_age}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="464" y="0" width="91" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{amt}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;###0.00-">
+				<reportElement x="300" y="0" width="80" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{avg_full_time}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="26" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="100" height="20"/>
+				<textElement/>
+				<text><![CDATA[Totals	]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="0" width="68" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{full_time_totals}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="166" y="0" width="74" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{part_time_totals}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="240" y="0" width="60" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{total_emp}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0;###0-">
+				<reportElement x="380" y="0" width="84" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$V{average_age}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="464" y="0" width="91" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{average_pay}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0;###0-">
+				<reportElement x="300" y="0" width="80" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{average_hrs}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band height="54" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>

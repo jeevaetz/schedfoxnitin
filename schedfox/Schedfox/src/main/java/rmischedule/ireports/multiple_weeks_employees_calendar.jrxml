@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="multiple_weeks_employees_calendar" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="Crosstab Data Text" hAlign="Center"/>
+	<parameter name="startDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2013-03-01"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="endDate" class="java.lang.String">
+		<defaultValueExpression><![CDATA["2013-03-31"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="clientId" class="java.lang.String">
+		<defaultValueExpression><![CDATA["3104"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="employeeId" class="java.lang.String">
+		<defaultValueExpression><![CDATA["5247"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="schema" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT
+*,
+(CASE WHEN date_part('dow', doy) = 0 THEN date_part('week', doy) + 1 ELSE date_part('week', doy) END) as week_num,
+date_part('dow', doy) as day_num
+FROM
+$P!{schema}.generate_date_series(DATE($P{startDate}), DATE($P{endDate})) as dates
+LEFT JOIN (
+SELECT * FROM $P!{schema}.assemble_schedule(DATE($P{startDate}), DATE($P{endDate}), -1, Array[$P{clientId}]::integer[],Array[$P{employeeId}]::integer[])
+) as sched ON sched.date = dates.doy
+LEFT JOIN $P!{schema}.client ON client.client_id = $P{clientId}::integer
+ORDER BY doy]]>
+	</queryString>
+	<field name="doy" class="java.sql.Date"/>
+	<field name="dow" class="java.lang.Integer"/>
+	<field name="sid" class="java.lang.String"/>
+	<field name="cid" class="java.lang.Integer"/>
+	<field name="cname" class="java.lang.String"/>
+	<field name="ename" class="java.lang.String"/>
+	<field name="smid" class="java.lang.Integer"/>
+	<field name="eid" class="java.lang.Integer"/>
+	<field name="start_time" class="java.lang.Integer"/>
+	<field name="end_time" class="java.lang.Integer"/>
+	<field name="lu" class="java.sql.Timestamp"/>
+	<field name="sdate" class="java.sql.Date"/>
+	<field name="edate" class="java.sql.Date"/>
+	<field name="gp" class="java.lang.Long"/>
+	<field name="pay_opt" class="java.lang.String"/>
+	<field name="bill_opt" class="java.lang.String"/>
+	<field name="rate_code_id" class="java.lang.Integer"/>
+	<field name="date" class="java.sql.Date"/>
+	<field name="trainerid" class="java.lang.Integer"/>
+	<field name="branch_id" class="java.lang.Integer"/>
+	<field name="isdeleted" class="java.lang.Integer"/>
+	<field name="type" class="java.lang.Integer"/>
+	<field name="client_id" class="java.lang.Integer"/>
+	<field name="client_name" class="java.lang.String"/>
+	<field name="client_phone" class="java.lang.String"/>
+	<field name="client_phone2" class="java.lang.String"/>
+	<field name="client_fax" class="java.lang.String"/>
+	<field name="client_address" class="java.lang.String"/>
+	<field name="client_address2" class="java.lang.String"/>
+	<field name="client_city" class="java.lang.String"/>
+	<field name="client_state" class="java.lang.String"/>
+	<field name="client_zip" class="java.lang.String"/>
+	<field name="management_id" class="java.lang.Integer"/>
+	<field name="client_start_date" class="java.sql.Date"/>
+	<field name="client_end_date" class="java.sql.Date"/>
+	<field name="client_is_deleted" class="java.lang.Integer"/>
+	<field name="client_type" class="java.lang.Integer"/>
+	<field name="client_last_updated" class="java.sql.Timestamp"/>
+	<field name="client_worksite" class="java.lang.Integer"/>
+	<field name="client_training_time" class="java.lang.Double"/>
+	<field name="client_bill_for_training" class="java.lang.Boolean"/>
+	<field name="client_worksite_order" class="java.lang.Integer"/>
+	<field name="client_break" class="java.lang.String"/>
+	<field name="store_volume_id" class="java.lang.Integer"/>
+	<field name="store_remote_market_id" class="java.lang.Boolean"/>
+	<field name="url" class="java.lang.String"/>
+	<field name="cusername" class="java.lang.String"/>
+	<field name="cpassword" class="java.lang.String"/>
+	<field name="default_non_billable" class="java.lang.Boolean"/>
+	<field name="check_out_option_id" class="java.lang.Integer"/>
+	<field name="default_contract_renewal" class="org.postgresql.util.PGInterval"/>
+	<field name="checkin_from_post_phone" class="java.lang.Boolean"/>
+	<field name="contact_for_renewal" class="java.lang.Boolean"/>
+	<field name="week_num" class="java.lang.Double"/>
+	<field name="day_num" class="java.lang.Double"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="32" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="555" height="32"/>
+				<textElement>
+					<font size="16"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{client_name}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="70" splitType="Stretch">
+			<crosstab>
+				<reportElement x="0" y="0" width="555" height="70"/>
+				<rowGroup name="week_num" width="15">
+					<bucket>
+						<bucketExpression class="java.lang.Double"><![CDATA[$F{week_num}]]></bucketExpression>
+					</bucket>
+					<crosstabRowHeader>
+						<cellContents backcolor="#F0F8FF" mode="Opaque"/>
+					</crosstabRowHeader>
+					<crosstabTotalRowHeader>
+						<cellContents/>
+					</crosstabTotalRowHeader>
+				</rowGroup>
+				<columnGroup name="day_num" height="0">
+					<bucket>
+						<bucketExpression class="java.lang.Double"><![CDATA[$F{day_num}]]></bucketExpression>
+					</bucket>
+					<crosstabColumnHeader>
+						<cellContents backcolor="#F0F8FF" mode="Opaque"/>
+					</crosstabColumnHeader>
+					<crosstabTotalColumnHeader>
+						<cellContents/>
+					</crosstabTotalColumnHeader>
+				</columnGroup>
+				<measure name="sidMeasure" class="java.lang.Integer" calculation="Count">
+					<measureExpression><![CDATA[$F{sid}]]></measureExpression>
+				</measure>
+				<measure name="doy" class="java.util.Date">
+					<measureExpression><![CDATA[$F{doy}]]></measureExpression>
+				</measure>
+				<measure name="start_time" class="java.lang.Object">
+					<measureExpression><![CDATA[$F{start_time}]]></measureExpression>
+				</measure>
+				<measure name="end_time" class="java.lang.Object">
+					<measureExpression><![CDATA[$F{end_time}]]></measureExpression>
+				</measure>
+				<crosstabCell width="76" height="68">
+					<cellContents mode="Opaque">
+						<box>
+							<topPen lineWidth="0.5"/>
+							<leftPen lineWidth="0.5"/>
+							<bottomPen lineWidth="0.5"/>
+							<rightPen lineWidth="0.5"/>
+						</box>
+						<textField isBlankWhenNull="true">
+							<reportElement style="Crosstab Data Text" x="0" y="0" width="76" height="22" forecolor="#CCCCCC"/>
+							<textElement/>
+							<textFieldExpression class="java.lang.String"><![CDATA[new SimpleDateFormat("dd").format($V{doy})]]></textFieldExpression>
+						</textField>
+						<textField isBlankWhenNull="true">
+							<reportElement style="Crosstab Data Text" x="0" y="22" width="76" height="22"/>
+							<textElement/>
+							<textFieldExpression class="java.lang.String"><![CDATA[(((int)(Math.floor(Double.parseDouble($V{start_time}.toString()) / 60)))
++ "") +
+((((int)(Math.floor(Double.parseDouble($V{start_time}.toString()) % 60))) + "").length() == 1 ?
+("0" + ((int)(Math.floor(Double.parseDouble($V{start_time}.toString()) % 60)))) :
+(((int)(Math.floor(Double.parseDouble($V{start_time}.toString()) % 60))) + ""))]]></textFieldExpression>
+						</textField>
+						<textField isBlankWhenNull="true">
+							<reportElement style="Crosstab Data Text" x="0" y="44" width="76" height="22"/>
+							<textElement/>
+							<textFieldExpression class="java.lang.String"><![CDATA[(((int)(Math.floor(Double.parseDouble($V{end_time}.toString()) / 60)))
++ "") +
+((((int)(Math.floor(Double.parseDouble($V{end_time}.toString()) % 60))) + "").length() == 1 ?
+("0" + ((int)(Math.floor(Double.parseDouble($V{end_time}.toString()) % 60)))) :
+(((int)(Math.floor(Double.parseDouble($V{end_time}.toString()) % 60))) + ""))]]></textFieldExpression>
+						</textField>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell height="25" rowTotalGroup="week_num">
+					<cellContents backcolor="#BFE1FF" mode="Opaque">
+						<textField>
+							<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="25"/>
+							<textElement/>
+							<textFieldExpression class="java.lang.Integer"><![CDATA[$V{sidMeasure}]]></textFieldExpression>
+						</textField>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell width="50" columnTotalGroup="day_num">
+					<cellContents backcolor="#BFE1FF" mode="Opaque">
+						<textField>
+							<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="25"/>
+							<textElement/>
+							<textFieldExpression class="java.lang.Integer"><![CDATA[$V{sidMeasure}]]></textFieldExpression>
+						</textField>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell rowTotalGroup="week_num" columnTotalGroup="day_num">
+					<cellContents backcolor="#BFE1FF" mode="Opaque">
+						<textField>
+							<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="25"/>
+							<textElement/>
+							<textFieldExpression class="java.lang.Integer"><![CDATA[$V{sidMeasure}]]></textFieldExpression>
+						</textField>
+					</cellContents>
+				</crosstabCell>
+			</crosstab>
+		</band>
+	</summary>
+</jasperReport>

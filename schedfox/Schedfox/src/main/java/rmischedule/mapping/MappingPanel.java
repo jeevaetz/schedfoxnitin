@@ -1,0 +1,305 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/*
+ * MappingPanel.java
+ *
+ * Created on Jan 20, 2011, 5:15:43 PM
+ */
+package rmischedule.mapping;
+
+import com.creamtec.ajaxswing.AjaxSwingManager;
+import com.creamtec.ajaxswing.core.ClientAgent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.LinkedList;
+import javax.swing.ImageIcon;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import rmischedule.ireports.viewer.IReportViewer;
+import rmischedule.main.Main_Window;
+import schedfoxlib.model.AddressInterface;
+import schedfoxlib.model.MappingLocation;
+import rmischeduleserver.mapping.DirectionResults;
+import rmischeduleserver.mapping.MapQuestFactory;
+import rmischeduleserver.mapping.TestAddress;
+import rmischeduleserver.mapping.gson.Maneuver;
+
+/**
+ *
+ * @author user
+ */
+public class MappingPanel extends javax.swing.JPanel {
+
+    private MappingLocation originLocation;
+    private DirectionResults directionResults;
+    private int defaultZoom = 12;
+
+    /** Creates new form MappingPanel */
+    public MappingPanel() {
+        initComponents();
+
+        printBtn.setIcon(Main_Window.Printer_Icon);
+    }
+
+    private void refreshMap() {
+        try {
+            int width = mapLabel.getWidth();
+            int height = mapLabel.getHeight();
+            if (width == 0) {
+                width = (int) mapLabel.getPreferredSize().getWidth();
+            }
+            if (height == 0) {
+                height = (int) mapLabel.getPreferredSize().getHeight();
+            }
+            if (originLocation != null) {
+                BufferedImage mapImage = MapQuestFactory.displayMap(originLocation.getLat(),
+                        originLocation.getLon(), width, height, defaultZoom);
+                mapLabel.setIcon(new ImageIcon(mapImage));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void displayAddress(AddressInterface addressToCenterOn) {
+        ArrayList<AddressInterface> lookupAddresses = new ArrayList<AddressInterface>();
+        lookupAddresses.add(addressToCenterOn);
+        try {
+            ArrayList<MappingLocation> addresses =
+                    MapQuestFactory.geocodeAddresses(lookupAddresses);
+            originLocation = addresses.get(0);
+        } catch (Exception e) {
+            System.out.println("Could not get address geolocated! Error as follows: ");
+            e.printStackTrace();
+        }
+        this.refreshMap();
+    }
+
+    public static void main(String args[]) {
+        JDialog myDialog = new JDialog();
+        MappingPanel myMap = new MappingPanel();
+        TestAddress myAddress = new TestAddress("1001 Lake Carolyn Pkwy", "", "Irving", "TX", "75039");
+        TestAddress myAddress2 = new TestAddress("1001 7th St", "", "Fort Worth", "TX", "76107");
+        myDialog.getContentPane().add(myMap);
+        myMap.mapDirections(myAddress, myAddress2);
+        myDialog.setVisible(true);
+    }
+
+    public void mapDirections(AddressInterface addressToStart, AddressInterface addressToEnd) {
+        try {
+            ArrayList<AddressInterface> addresses = new ArrayList<AddressInterface>();
+            addresses.add(addressToStart);
+            addresses.add(addressToEnd);
+            ArrayList<MappingLocation> locations = MapQuestFactory.geocodeAddresses(addresses);
+            this.originLocation = locations.get(0);
+
+            directionResults =
+                    MapQuestFactory.displayDirections(addressToStart, addressToEnd, 0, 0, 8);
+            refreshDirections();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void refreshDirections() {
+        try {
+            BufferedImage img = MapQuestFactory.displayMap(directionResults, 0, 0, this.defaultZoom);
+            mapLabel.setIcon(new ImageIcon(img));
+            directionPanel.removeAll();
+            LinkedList<Maneuver> maneuvers =
+                    directionResults.getRoute().getLegs().getFirst().getManeuvers();
+            Iterator<Maneuver> iterator = maneuvers.iterator();
+            while (iterator.hasNext()) {
+                directionPanel.add(new DirectionPanel(iterator.next()));
+            }
+            this.revalidate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jPanel4 = new javax.swing.JPanel();
+        mapLabel = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        printBtn = new javax.swing.JButton();
+        jPanel3 = new javax.swing.JPanel();
+        directionPanel = new javax.swing.JPanel();
+
+        setBorder(javax.swing.BorderFactory.createTitledBorder("Mapping"));
+        setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.LINE_AXIS));
+
+        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
+        jPanel4.setLayout(new javax.swing.BoxLayout(jPanel4, javax.swing.BoxLayout.X_AXIS));
+
+        mapLabel.setMaximumSize(new java.awt.Dimension(600, 600));
+        mapLabel.setMinimumSize(new java.awt.Dimension(100, 100));
+        mapLabel.setPreferredSize(new java.awt.Dimension(300, 300));
+        jPanel4.add(mapLabel);
+
+        jPanel2.setMaximumSize(new java.awt.Dimension(35, 32767));
+        jPanel2.setMinimumSize(new java.awt.Dimension(35, 0));
+        jPanel2.setPreferredSize(new java.awt.Dimension(35, 300));
+        jPanel2.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 5));
+
+        jButton1.setText("+");
+        jButton1.setPreferredSize(new java.awt.Dimension(35, 30));
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        jPanel2.add(jButton1);
+
+        jButton2.setText("-");
+        jButton2.setPreferredSize(new java.awt.Dimension(35, 30));
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+        jPanel2.add(jButton2);
+
+        jPanel1.setMinimumSize(new java.awt.Dimension(10, 30));
+        jPanel1.setPreferredSize(new java.awt.Dimension(100, 30));
+        jPanel2.add(jPanel1);
+
+        printBtn.setPreferredSize(new java.awt.Dimension(35, 30));
+        printBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                printBtnActionPerformed(evt);
+            }
+        });
+        jPanel2.add(printBtn);
+
+        jPanel4.add(jPanel2);
+
+        jPanel3.setMinimumSize(new java.awt.Dimension(350, 10));
+        jPanel3.setPreferredSize(new java.awt.Dimension(350, 100));
+        jPanel3.setLayout(new java.awt.GridLayout(1, 0));
+
+        directionPanel.setMaximumSize(new java.awt.Dimension(300, 32767));
+        directionPanel.setMinimumSize(new java.awt.Dimension(250, 500));
+        directionPanel.setPreferredSize(new java.awt.Dimension(250, 500));
+        directionPanel.setLayout(new javax.swing.BoxLayout(directionPanel, javax.swing.BoxLayout.Y_AXIS));
+        jPanel3.add(directionPanel);
+
+        jPanel4.add(jPanel3);
+
+        jScrollPane1.setViewportView(jPanel4);
+
+        add(jScrollPane1);
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        this.defaultZoom++;
+        if (this.directionResults != null) {
+            this.refreshDirections();
+        }  else {
+            this.refreshMap();
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        this.defaultZoom--;
+        if (this.directionResults != null) {
+            this.refreshDirections();
+        }  else {
+            this.refreshMap();
+        }
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void printBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printBtnActionPerformed
+        URL mapURL = null;
+        try {
+            int width = mapLabel.getWidth();
+            int height = mapLabel.getHeight();
+            if (width == 0) {
+                width = (int) mapLabel.getPreferredSize().getWidth();
+            }
+            if (height == 0) {
+                height = (int) mapLabel.getPreferredSize().getHeight();
+            }
+            if (originLocation != null) {
+                mapURL = MapQuestFactory.getMapURL(directionResults, width, height, defaultZoom);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (mapURL == null) {
+            JOptionPane.showMessageDialog(Main_Window.parentOfApplication,
+                    "No valid map to display!", "No map", JOptionPane.ERROR_MESSAGE);
+        } else {
+            try {
+                InputStream reportStream =
+                        getClass().getResourceAsStream("/rmischedule/ireports/display_map_report.jasper");
+
+                Hashtable parameters = new Hashtable();
+
+                parameters.put("map_url", mapURL);
+
+                
+                JasperPrint report = JasperFillManager.fillReport(reportStream, parameters, this.directionResults);
+                
+                if (AjaxSwingManager.isAjaxSwingRunning()) {
+                    JFileChooser saveFileChooser = new JFileChooser();
+                    saveFileChooser.setApproveButtonText("Select file for export");
+                    saveFileChooser.setSelectedFile(new File("map.pdf"));
+                    int selectedValue = saveFileChooser.showSaveDialog(Main_Window.parentOfApplication);
+
+                    if (selectedValue == JFileChooser.APPROVE_OPTION) {
+                        File selectedFile = saveFileChooser.getSelectedFile();
+                        JasperExportManager.exportReportToPdfFile(report, selectedFile.getAbsolutePath());
+
+                    }
+                } else {
+                    IReportViewer viewer = new IReportViewer(report);
+                    Main_Window.parentOfApplication.desktop.add(viewer);
+                    viewer.showForm();
+                }
+            } catch (Exception exe) {
+                exe.printStackTrace();
+            }
+        }
+    }//GEN-LAST:event_printBtnActionPerformed
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel directionPanel;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel mapLabel;
+    private javax.swing.JButton printBtn;
+    // End of variables declaration//GEN-END:variables
+}

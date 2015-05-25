@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD JasperReport//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="GenericReport" pageWidth="792" pageHeight="612" orientation="Landscape" columnWidth="732" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="BackgroundColor" isDefault="false">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[new Boolean(($V{ROW_COUNT}.intValue()%2) == 0)]]></conditionExpression>
+			<style isDefault="false" style="BackgroundColor" backcolor="#DDD9E9"/>
+		</conditionalStyle>
+	</style>
+	<subDataset name="SubReportData">
+		<field name="rowHeader" class="java.lang.Integer"/>
+		<field name="columnHeaders" class="java.lang.String"/>
+		<field name="cellData" class="java.lang.String"/>
+	</subDataset>
+	<parameter name="Title" class="java.lang.String">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="DateRange" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<field name="title" class="java.lang.String"/>
+	<field name="subreportData" class="rmischedule.xprint.data.xGenericSubReportData"/>
+	<group name="maingroup" isStartNewPage="true">
+		<groupExpression><![CDATA[$F{title}]]></groupExpression>
+		<groupHeader>
+			<band height="46">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false" hyperlinkType="None">
+					<reportElement key="textField-1" x="5" y="0" width="727" height="21"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+					<textElement textAlignment="Center">
+						<font size="16" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{title}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" hyperlinkType="None">
+					<reportElement key="textField-2" x="5" y="21" width="727" height="21"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+					<textElement textAlignment="Center">
+						<font size="16" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{DateRange}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="1"/>
+		</groupFooter>
+	</group>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band/>
+	</title>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<columnHeader>
+		<band/>
+	</columnHeader>
+	<detail>
+		<band height="28">
+			<crosstab columnBreakOffset="2">
+				<reportElement key="crosstab-1" x="5" y="0" width="727" height="26" isPrintWhenDetailOverflows="true"/>
+				<crosstabDataset>
+					<dataset>
+						<datasetRun subDataset="SubReportData">
+							<dataSourceExpression><![CDATA[$F{subreportData}]]></dataSourceExpression>
+						</datasetRun>
+					</dataset>
+				</crosstabDataset>
+				<crosstabHeaderCell>
+					<cellContents mode="Transparent">
+						<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+					</cellContents>
+				</crosstabHeaderCell>
+				<rowGroup name="rowHeader" width="0">
+					<bucket>
+						<bucketExpression class="java.lang.Integer"><![CDATA[$F{rowHeader}]]></bucketExpression>
+						<comparatorExpression><![CDATA[new rmischedule.xprint.data.RowComparator()]]></comparatorExpression>
+					</bucket>
+					<crosstabRowHeader>
+						<cellContents/>
+					</crosstabRowHeader>
+					<crosstabTotalRowHeader>
+						<cellContents/>
+					</crosstabTotalRowHeader>
+				</rowGroup>
+				<columnGroup name="columnHeaders" height="13" headerPosition="Center">
+					<bucket>
+						<bucketExpression class="java.lang.String"><![CDATA[$F{columnHeaders}]]></bucketExpression>
+						<comparatorExpression><![CDATA[new rmischedule.xprint.data.ColumnComparator()]]></comparatorExpression>
+					</bucket>
+					<crosstabColumnHeader>
+						<cellContents mode="Transparent">
+							<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="2Point" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+							<textField isStretchWithOverflow="true" isBlankWhenNull="false" hyperlinkType="None">
+								<reportElement key="textField" stretchType="RelativeToBandHeight" x="0" y="0" width="101" height="13"/>
+								<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+								<textElement textAlignment="Justified" verticalAlignment="Middle"/>
+								<textFieldExpression class="java.lang.String"><![CDATA[$V{columnHeaders}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabColumnHeader>
+					<crosstabTotalColumnHeader>
+						<cellContents/>
+					</crosstabTotalColumnHeader>
+				</columnGroup>
+				<measure name="cellData_First" class="java.lang.Object" calculation="First">
+					<measureExpression><![CDATA[$F{cellData}]]></measureExpression>
+				</measure>
+				<crosstabCell width="101" height="17">
+					<cellContents mode="Transparent" style="BackgroundColor">
+						<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+						<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
+							<reportElement key="textField" style="BackgroundColor" stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="101" height="17"/>
+							<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+							<textElement textAlignment="Justified" verticalAlignment="Middle"/>
+							<textFieldExpression class="java.lang.String"><![CDATA[$V{cellData_First}]]></textFieldExpression>
+						</textField>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell width="0" height="17" columnTotalGroup="columnHeaders">
+					<cellContents mode="Transparent">
+						<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell width="101" height="0" rowTotalGroup="rowHeader">
+					<cellContents mode="Transparent" style="BackgroundColor">
+						<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell width="0" height="0" rowTotalGroup="rowHeader" columnTotalGroup="columnHeaders">
+					<cellContents mode="Transparent">
+						<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+					</cellContents>
+				</crosstabCell>
+				<whenNoDataCell>
+					<cellContents mode="Transparent">
+						<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+					</cellContents>
+				</whenNoDataCell>
+			</crosstab>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band height="28">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false" hyperlinkType="None">
+				<reportElement key="textField-3" x="644" y="10" width="50" height="18"/>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" evaluationTime="Report" isBlankWhenNull="false" hyperlinkType="None">
+				<reportElement key="textField-4" x="694" y="10" width="38" height="18"/>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="line-1" x="5" y="5" width="727" height="1"/>
+				<graphicElement pen="2Point"/>
+			</line>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="40"/>
+	</summary>
+</jasperReport>

@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="client_location_ breakdown" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="style1">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue() % 2 == 0)]]></conditionExpression>
+			<style mode="Opaque" backcolor="#EDECEC"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="schema" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="branchId" class="java.lang.String">
+		<defaultValueExpression><![CDATA["-1"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+COUNT(*) as industry_count,
+(SELECT COUNT(*) FROM (SELECT cid FROM $P!{schema}.get_client_pay_amounts_with_train(DATE(NOW() - interval '1 year'), DATE(NOW()), -1, null::integer[]) GROUP BY cid) as dat) as tot_count,
+industry_type,
+SUM(paid_for_year) as paid_for_year,
+SUM(paid_for_last_week) as paid_for_last_week,
+SUM((CASE WHEN armed_type = 'Not Set' OR armed_type IS NULL THEN 1 ELSE 0 END)) as armed_non_sel,
+SUM((CASE WHEN armed_type = 'Armed' THEN 1 ELSE 0 END)) as armed,
+SUM((CASE WHEN armed_type = 'Unarmed' THEN 1 ELSE 0 END)) as unarmed,
+SUM(total_worked) as total_worked,
+SUM(armed_nonsel_total_worked) as armed_nonsel_total_worked,
+SUM(armed_total_worked) as armed_total_worked,
+SUM(unarmed_total_worked) as unarmed_total_worked,
+(CASE WHEN $P{branchId} = '-1' THEN 'Global' ELSE (SELECT branch_name FROM control_db.branch WHERE branch_id = $P!{branchId}::integer) END) as branch_name
+FROM
+(
+SELECT
+COALESCE(industry.industry_type, 'Not Set') as industry_type,
+COUNT(*) as industry_count,
+SUM((CASE WHEN armed_type = 'Not Set' OR armed_type IS NULL THEN time_worked ELSE 0 END) / 52) as armed_nonsel_total_worked,
+SUM((CASE WHEN armed_type = 'Armed' THEN time_worked ELSE 0 END) / 52) as armed_total_worked,
+SUM((CASE WHEN armed_type = 'Unarmed' THEN time_worked ELSE 0 END) / 52) as unarmed_total_worked,
+SUM(COALESCE(paid_amount, 0) + COALESCE(overtime_amount, 0)) as paid_for_year,
+SUM((CASE WHEN week_started BETWEEN DATE(NOW() - interval '2 week') AND DATE(NOW() - interval '1 week') THEN COALESCE(paid_amount, 0.0) + COALESCE(overtime_amount, 0.0) ELSE 0 END)) as paid_for_last_week,
+armed_type,
+SUM(time_worked / 52) as total_worked
+FROM
+(
+	SELECT * FROM $P!{schema}.get_client_pay_amounts_with_train(DATE(NOW() - interval '1 year'), DATE(NOW()), -1, null::integer[]) as amt
+) as historical_information
+LEFT JOIN $P!{schema}.client ON historical_information.cid = client.client_id
+LEFT JOIN
+(
+	SELECT DISTINCT ON (key_for_value)
+	(CASE WHEN COALESCE(dynamic_field_value, 'Select a value') = 'Select a value' THEN 'Not Set' ELSE dynamic_field_value END) as industry_type,
+	key_for_value
+	FROM
+	$P!{schema}.dynamic_field_def
+	LEFT JOIN $P!{schema}.dynamic_field_value ON dynamic_field_value.dynamic_field_def_id = dynamic_field_def.dynamic_field_def_id
+	WHERE
+	dynamic_field_def_name = 'Client Industry Type'
+) as industry ON client.client_id = industry.key_for_value::integer
+LEFT JOIN
+(
+	SELECT DISTINCT ON (key_for_value)
+	(CASE WHEN COALESCE(dynamic_field_value, 'Select a value') = 'Select a value' THEN 'Not Set' ELSE dynamic_field_value END) as armed_type,
+	key_for_value
+	FROM
+	$P!{schema}.dynamic_field_def
+	LEFT JOIN $P!{schema}.dynamic_field_value ON dynamic_field_value.dynamic_field_def_id = dynamic_field_def.dynamic_field_def_id
+	WHERE
+	dynamic_field_def_name = 'Client Armed Type'
+) as armed ON client.client_id = armed.key_for_value::integer
+
+WHERE  ($P{branchId}::integer = -1 OR $P{branchId}::integer = client.branch_id)
+GROUP BY COALESCE(industry.industry_type, 'Not Set'), client.client_id, armed_type
+) as industry_data
+
+GROUP BY industry_type
+ORDER BY industry_type]]>
+	</queryString>
+	<field name="industry_count" class="java.lang.Long"/>
+	<field name="tot_count" class="java.lang.Long"/>
+	<field name="industry_type" class="java.lang.String"/>
+	<field name="paid_for_year" class="java.math.BigDecimal"/>
+	<field name="paid_for_last_week" class="java.math.BigDecimal"/>
+	<field name="armed_non_sel" class="java.lang.Long"/>
+	<field name="armed" class="java.lang.Long"/>
+	<field name="unarmed" class="java.lang.Long"/>
+	<field name="total_worked" class="java.math.BigDecimal"/>
+	<field name="armed_nonsel_total_worked" class="java.math.BigDecimal"/>
+	<field name="armed_total_worked" class="java.math.BigDecimal"/>
+	<field name="unarmed_total_worked" class="java.math.BigDecimal"/>
+	<field name="branch_name" class="java.lang.String"/>
+	<variable name="total_count" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{industry_count}]]></variableExpression>
+	</variable>
+	<variable name="tot_armed_non_set" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{armed_non_sel}]]></variableExpression>
+	</variable>
+	<variable name="tot_armed" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{armed}]]></variableExpression>
+	</variable>
+	<variable name="tot_unarmed" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{unarmed}]]></variableExpression>
+	</variable>
+	<variable name="tot_percentage" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[new Double($F{industry_count}.doubleValue() / $F{tot_count}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="total_payroll" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{paid_for_year}]]></variableExpression>
+	</variable>
+	<variable name="total_last_week" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{paid_for_last_week}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="47" splitType="Stretch">
+			<textField>
+				<reportElement x="75" y="0" width="727" height="47"/>
+				<textElement>
+					<font size="24"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Client Breakdown by Type (" + $F{branch_name} + ")"]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="49" splitType="Stretch">
+			<staticText>
+				<reportElement x="75" y="24" width="202" height="24"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Industry Type]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="277" y="24" width="82" height="24"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Count]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="450" y="24" width="131" height="24"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="Serif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Unassigned]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="581" y="24" width="88" height="24"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="Serif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Armed]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="669" y="24" width="133" height="24"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="Serif" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Non Armed]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="359" y="24" width="91" height="24"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Percentage]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="451" y="1" width="351" height="24" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Armed]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="75" y="1" width="375" height="24" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Industry]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="82" splitType="Stretch">
+			<textField>
+				<reportElement style="style1" x="75" y="0" width="202" height="27"/>
+				<box leftPadding="0" rightPadding="0">
+					<pen lineColor="#999999"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{industry_type}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="style1" x="277" y="0" width="82" height="27"/>
+				<box leftPadding="0" rightPadding="0">
+					<pen lineColor="#999999"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{industry_count}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="style1" x="450" y="0" width="131" height="27"/>
+				<box leftPadding="0" rightPadding="0">
+					<pen lineColor="#999999"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{armed_non_sel}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="style1" x="581" y="0" width="88" height="27"/>
+				<box leftPadding="0" rightPadding="0">
+					<pen lineColor="#999999"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{armed}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="style1" x="669" y="0" width="133" height="27"/>
+				<box leftPadding="0" rightPadding="0">
+					<pen lineColor="#999999"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{unarmed}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00 %">
+				<reportElement style="style1" x="359" y="0" width="91" height="27"/>
+				<box leftPadding="0" rightPadding="0">
+					<pen lineColor="#999999"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[new Double($F{industry_count}.doubleValue() / $F{tot_count}.doubleValue())]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="style1" x="75" y="27" width="202" height="27"/>
+				<box leftPadding="0" rightPadding="0">
+					<pen lineColor="#999999"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Average Industry Hours (Per week)"]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement style="style1" x="277" y="27" width="173" height="27"/>
+				<box>
+					<pen lineColor="#999999"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{total_worked}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement style="style1" x="450" y="27" width="131" height="27"/>
+				<box>
+					<pen lineColor="#999999"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{armed_nonsel_total_worked}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement style="style1" x="581" y="27" width="88" height="27"/>
+				<box>
+					<pen lineColor="#999999"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{armed_total_worked}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement style="style1" x="669" y="27" width="133" height="27"/>
+				<box leftPadding="0" rightPadding="0">
+					<pen lineColor="#999999"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{unarmed_total_worked}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="style1" x="75" y="55" width="202" height="27"/>
+				<box leftPadding="0" rightPadding="0">
+					<pen lineColor="#999999"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Payroll Information"]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement style="style1" x="277" y="55" width="82" height="27"/>
+				<box leftPadding="0" rightPadding="0">
+					<pen lineColor="#999999"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{paid_for_year}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement style="style1" x="450" y="55" width="131" height="27"/>
+				<box leftPadding="0" rightPadding="0">
+					<pen lineColor="#999999"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{paid_for_last_week}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement style="style1" x="581" y="55" width="221" height="27"/>
+				<box leftPadding="0" rightPadding="0">
+					<pen lineColor="#999999"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[" paid for last week."]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement style="style1" x="359" y="55" width="91" height="27"/>
+				<box leftPadding="0" rightPadding="0">
+					<pen lineColor="#999999"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[" paid for year."]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="52" splitType="Stretch">
+			<staticText>
+				<reportElement stretchType="RelativeToBandHeight" x="75" y="1" width="202" height="25"/>
+				<box rightPadding="5">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Totals]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="277" y="1" width="82" height="25"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{tot_count}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00 %">
+				<reportElement x="359" y="1" width="91" height="25"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$V{tot_percentage}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="450" y="1" width="131" height="25"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{tot_armed_non_set}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="581" y="1" width="88" height="25"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{tot_armed}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="669" y="1" width="133" height="25"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{tot_unarmed}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement style="style1" x="278" y="26" width="173" height="25"/>
+				<box leftPadding="0" rightPadding="0">
+					<pen lineColor="#999999"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[NumberFormat.getCurrencyInstance().format($V{total_payroll}) + " paid for year."]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement stretchType="RelativeToBandHeight" x="75" y="26" width="202" height="25"/>
+				<box rightPadding="5">
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Payroll Information]]></text>
+			</staticText>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement style="style1" x="451" y="26" width="352" height="25"/>
+				<box leftPadding="0" rightPadding="0">
+					<pen lineColor="#999999"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[NumberFormat.getCurrencyInstance().format($V{total_last_week}) + " paid for last week."]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

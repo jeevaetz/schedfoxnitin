@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD JasperReport//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="display_map_report" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<parameter name="map_url" class="java.net.URL"/>
+	<field name="direction" class="java.lang.String"/>
+	<field name="icon" class="java.net.URL"/>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band/>
+	</title>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<columnHeader>
+		<band height="245">
+			<image hyperlinkType="None">
+				<reportElement x="0" y="0" width="406" height="245"/>
+				<graphicElement/>
+				<imageExpression class="java.net.URL"><![CDATA[$P{map_url}]]></imageExpression>
+			</image>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="26">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="50" y="0" width="495" height="26"/>
+				<textElement isStyledText="true">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{direction}]]></textFieldExpression>
+			</textField>
+			<image>
+				<reportElement x="9" y="0" width="27" height="26"/>
+				<graphicElement/>
+				<imageExpression class="java.net.URL"><![CDATA[]]></imageExpression>
+			</image>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band/>
+	</pageFooter>
+	<summary>
+		<band height="42"/>
+	</summary>
+</jasperReport>

@@ -1,0 +1,258 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package rmischedule.event_log;
+
+import java.awt.CardLayout;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import javax.swing.JOptionPane;
+import rmischedule.main.Main_Window;
+import rmischeduleserver.control.EventController;
+import rmischeduleserver.control.UserController;
+import schedfoxlib.model.EventFollowType;
+import schedfoxlib.model.EventFollowup;
+import schedfoxlib.model.Group;
+import schedfoxlib.model.User;
+
+/**
+ *
+ * @author ira
+ */
+public class EventFollowupPanel extends javax.swing.JPanel {
+    
+    private SingleEventPanel singleEventPanel;
+    private static HashMap<Integer, EventFollowType> followUpCache;
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+
+    private EventFollowup eventFollowup;
+    private String companyId;
+    
+    /**
+     * Creates new form EventFollowupPanel
+     */
+    public EventFollowupPanel(EventFollowup eventFollow, SingleEventPanel singleEventPanel, String companyId) {
+        initComponents();
+        
+        this.eventFollowup = eventFollow;
+        this.singleEventPanel = singleEventPanel;
+        this.companyId = companyId;
+        
+        EventController eventController = EventController.getInstance(companyId);
+        if (EventFollowupPanel.followUpCache == null) {
+            try {
+                ArrayList<EventFollowType> followups = eventController.getEventFollowUpTypes();
+                EventFollowupPanel.followUpCache = new HashMap<Integer, EventFollowType>();
+                for (int f = 0; f < followups.size(); f++) {
+                    EventFollowType follow = followups.get(f);
+                    EventFollowupPanel.followUpCache.put(follow.getEventFollowTypeId(), follow);
+                }
+            } catch (Exception exe) {
+            }
+        }
+        CardLayout layout = (CardLayout) this.getLayout();
+        if (eventFollow.getFollowupProcessedBy() == 0) {
+            layout.show(this, "followupRequested");
+            SimpleDateFormat myFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+            try {
+                User followUpBy = this.singleEventPanel.getMyParent().fetchUserData(eventFollow.getFollowupRequestedBy());
+                requestedUserLbl.setText("Requested By: " + followUpBy.getUserFullName() + " on " + myFormat.format(eventFollow.getFollowupRequestCreatedon()));
+            } catch (Exception exe) {
+            }
+            
+            if (eventFollow.getFollowupRequestGroup() != null && eventFollow.getFollowupRequestGroup() != 0) {
+                Group currGroup = null;
+                try {
+                    UserController userController = new UserController("");
+                    ArrayList<Group> groups = userController.getGroups();
+                    for (int g = 0; g < groups.size(); g++) {
+                        if (groups.get(g).getGroupId() == eventFollow.getFollowupRequestGroup()) {
+                            currGroup = groups.get(g);
+                        }
+                    }
+                } catch (Exception exe) {}
+                requestedTypeLbl.setText("Followup requested by group: " + currGroup.getGroupName());
+            }
+            
+            if (eventFollow.getFollowupRequestUser() != null && eventFollow.getFollowupRequestUser() != 0) {
+                try {
+                    UserController userController = new UserController("");
+                    User user = userController.getUserById(eventFollow.getFollowupRequestUser());
+                    requestedTypeLbl.setText("Followup requested by user: " + user.getUserFullName());
+                } catch (Exception exe) {}
+            }
+        } else {
+            layout.show(this, "viewFollowUp");
+            try {
+                followupTypeLbl.setText(EventFollowupPanel.followUpCache.get(eventFollow.getFollowupType()).getEventFollow());
+            } catch (Exception exe) {
+            }
+            try {
+                dateLabel.setText(dateFormat.format(eventFollow.getFollowupProcessedOn()));
+            } catch (Exception exe) {
+            }
+            try {
+                followupTxt.setText(eventFollow.getFollowupNote());
+            } catch (Exception exe) {
+            }
+            try {
+                User followUpBy = this.singleEventPanel.getMyParent().fetchUserData(eventFollow.getFollowupProcessedBy());
+                userLabel.setText(followUpBy.getUserFullName());
+            } catch (Exception exe) {
+            }
+        }
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jButton1 = new javax.swing.JButton();
+        jPanel3 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        followupTypeLbl = new javax.swing.JLabel();
+        dateLabel = new javax.swing.JLabel();
+        userLabel = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        followupTxt = new javax.swing.JTextArea();
+        jPanel4 = new javax.swing.JPanel();
+        jPanel5 = new javax.swing.JPanel();
+        requestedUserLbl = new javax.swing.JLabel();
+        requestedTypeLbl = new javax.swing.JLabel();
+        jPanel7 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        eventFollowupTxt = new javax.swing.JTextArea();
+        jPanel8 = new javax.swing.JPanel();
+        saveFollowupBtn = new javax.swing.JButton();
+
+        jButton1.setText("jButton1");
+
+        setMaximumSize(new java.awt.Dimension(2147483647, 100));
+        setPreferredSize(new java.awt.Dimension(100, 80));
+        setLayout(new java.awt.CardLayout());
+
+        jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.Y_AXIS));
+
+        jPanel2.setMaximumSize(new java.awt.Dimension(32767, 20));
+        jPanel2.setMinimumSize(new java.awt.Dimension(0, 20));
+        jPanel2.setPreferredSize(new java.awt.Dimension(589, 20));
+        jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.LINE_AXIS));
+
+        followupTypeLbl.setMaximumSize(new java.awt.Dimension(200, 18));
+        followupTypeLbl.setMinimumSize(new java.awt.Dimension(120, 18));
+        followupTypeLbl.setPreferredSize(new java.awt.Dimension(120, 18));
+        jPanel2.add(followupTypeLbl);
+
+        dateLabel.setMaximumSize(new java.awt.Dimension(200, 18));
+        dateLabel.setMinimumSize(new java.awt.Dimension(120, 18));
+        dateLabel.setPreferredSize(new java.awt.Dimension(120, 18));
+        jPanel2.add(dateLabel);
+
+        userLabel.setMaximumSize(new java.awt.Dimension(200, 18));
+        userLabel.setMinimumSize(new java.awt.Dimension(120, 18));
+        userLabel.setPreferredSize(new java.awt.Dimension(120, 18));
+        jPanel2.add(userLabel);
+
+        jPanel3.add(jPanel2);
+
+        jPanel1.setLayout(new java.awt.GridLayout(1, 0));
+
+        followupTxt.setColumns(20);
+        followupTxt.setRows(5);
+        followupTxt.setEnabled(false);
+        jScrollPane1.setViewportView(followupTxt);
+
+        jPanel1.add(jScrollPane1);
+
+        jPanel3.add(jPanel1);
+
+        add(jPanel3, "viewFollowUp");
+
+        jPanel4.setLayout(new javax.swing.BoxLayout(jPanel4, javax.swing.BoxLayout.Y_AXIS));
+
+        jPanel5.setMaximumSize(new java.awt.Dimension(32767, 20));
+        jPanel5.setMinimumSize(new java.awt.Dimension(0, 20));
+        jPanel5.setPreferredSize(new java.awt.Dimension(589, 20));
+        jPanel5.setLayout(new javax.swing.BoxLayout(jPanel5, javax.swing.BoxLayout.LINE_AXIS));
+
+        requestedUserLbl.setMaximumSize(new java.awt.Dimension(300, 18));
+        requestedUserLbl.setMinimumSize(new java.awt.Dimension(300, 18));
+        requestedUserLbl.setPreferredSize(new java.awt.Dimension(300, 18));
+        jPanel5.add(requestedUserLbl);
+
+        requestedTypeLbl.setMaximumSize(new java.awt.Dimension(20000, 18));
+        requestedTypeLbl.setMinimumSize(new java.awt.Dimension(120, 18));
+        requestedTypeLbl.setPreferredSize(new java.awt.Dimension(120, 18));
+        jPanel5.add(requestedTypeLbl);
+
+        jPanel4.add(jPanel5);
+
+        jPanel7.setLayout(new javax.swing.BoxLayout(jPanel7, javax.swing.BoxLayout.LINE_AXIS));
+
+        eventFollowupTxt.setColumns(20);
+        eventFollowupTxt.setRows(5);
+        jScrollPane2.setViewportView(eventFollowupTxt);
+
+        jPanel7.add(jScrollPane2);
+
+        jPanel8.setMaximumSize(new java.awt.Dimension(80, 100));
+        jPanel8.setLayout(new java.awt.BorderLayout());
+
+        saveFollowupBtn.setText("Save");
+        saveFollowupBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveFollowupBtnActionPerformed(evt);
+            }
+        });
+        jPanel8.add(saveFollowupBtn, java.awt.BorderLayout.SOUTH);
+
+        jPanel7.add(jPanel8);
+
+        jPanel4.add(jPanel7);
+
+        add(jPanel4, "followupRequested");
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void saveFollowupBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveFollowupBtnActionPerformed
+        try {
+            eventFollowup.setFollowupProcessedBy(Integer.parseInt(Main_Window.parentOfApplication.getUser().getUserId()));
+            eventFollowup.setFollowupNote(eventFollowupTxt.getText());
+            EventController eventController = new EventController(this.companyId);
+            eventController.saveEventFollowup(eventFollowup);
+            
+            JOptionPane.showMessageDialog(Main_Window.parentOfApplication, "Followup Saved!", "Followup Saved!", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception exe) {}
+    }//GEN-LAST:event_saveFollowupBtnActionPerformed
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel dateLabel;
+    private javax.swing.JTextArea eventFollowupTxt;
+    private javax.swing.JTextArea followupTxt;
+    private javax.swing.JLabel followupTypeLbl;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel requestedTypeLbl;
+    private javax.swing.JLabel requestedUserLbl;
+    private javax.swing.JButton saveFollowupBtn;
+    private javax.swing.JLabel userLabel;
+    // End of variables declaration//GEN-END:variables
+}

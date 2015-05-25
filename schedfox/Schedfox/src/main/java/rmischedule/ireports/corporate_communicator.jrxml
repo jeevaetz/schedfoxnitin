@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report5" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="Title" isDefault="false" fontName="SansSerif" fontSize="26" isBold="true" pdfFontName="Helvetica-Bold"/>
+	<style name="SubTitle" isDefault="false" forecolor="#666666" fontName="SansSerif" fontSize="18"/>
+	<style name="Column header" isDefault="false" forecolor="#FFFFFF" fontName="SansSerif" fontSize="12" isBold="true"/>
+	<style name="Detail" isDefault="false" fontName="SansSerif" fontSize="12"/>
+	<parameter name="active_db" class="java.lang.String">
+		<defaultValueExpression><![CDATA[new String("champion_db")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ps_id" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[new Integer(2091)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["C:\\work\\schedfox\\Schedfox-Client\\src\\rmischedule\\ireports\\"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+client.client_name,
+1 as myorder,
+client.client_phone, client.client_phone2, client.client_fax,
+ps_date,
+COALESCE("user".user_first_name, client.client_name, '') || ' ' || COALESCE("user".user_last_name, client.client_name, '') as uname,
+seluser.user_first_name as fname, seluser.user_last_name,
+'Communication:' as name,
+problem as value
+FROM $P!{active_db}.problemsolver
+INNER JOIN $P!{active_db}.client ON client.client_id = problemsolver.client_id
+LEFT JOIN control_db."user" ON problemsolver.user_id = "user".user_id
+LEFT JOIN $P!{active_db}.client_to_user_contact ON client_to_user_contact.client_id = client.client_id
+LEFT JOIN control_db."user" as seluser ON seluser.user_id = client_to_user_contact.user_id
+WHERE ps_id = $P!{ps_id} AND problem IS NOT NULL AND problem != ''
+UNION
+SELECT
+client.client_name,
+2 as myorder,
+client.client_phone, client.client_phone2, client.client_fax,
+ps_date,
+COALESCE("user".user_first_name, client.client_name, '') || ' ' || COALESCE("user".user_last_name, client.client_name, '') as uname,
+seluser.user_first_name as fname, seluser.user_last_name,
+'Solution:' as name,
+solution as value
+FROM $P!{active_db}.problemsolver
+INNER JOIN $P!{active_db}.client ON client.client_id = problemsolver.client_id
+LEFT JOIN control_db."user" ON problemsolver.user_id = "user".user_id
+LEFT JOIN $P!{active_db}.client_to_user_contact ON client_to_user_contact.client_id = client.client_id
+LEFT JOIN control_db."user" as seluser ON seluser.user_id = client_to_user_contact.user_id
+WHERE ps_id = $P!{ps_id} AND solution IS NOT NULL AND solution != ''
+UNION
+SELECT
+client.client_name,
+3 as myorder,
+client.client_phone, client.client_phone2, client.client_fax,
+ps_date,
+COALESCE("user".user_first_name, client.client_name, '') || ' ' || COALESCE("user".user_last_name, client.client_name, '') as uname,
+seluser.user_first_name as fname, seluser.user_last_name,
+'Scheduler Instructions:' as name,
+scheduler_inst as value
+FROM $P!{active_db}.problemsolver
+INNER JOIN $P!{active_db}.client ON client.client_id = problemsolver.client_id
+LEFT JOIN control_db."user" ON problemsolver.user_id = "user".user_id
+LEFT JOIN $P!{active_db}.client_to_user_contact ON client_to_user_contact.client_id = client.client_id
+LEFT JOIN control_db."user" as seluser ON seluser.user_id = client_to_user_contact.user_id
+WHERE ps_id = $P!{ps_id} AND scheduler_inst IS NOT NULL AND scheduler_inst != ''
+UNION
+SELECT
+client.client_name,
+4 as myorder,
+client.client_phone, client.client_phone2, client.client_fax,
+ps_date,
+COALESCE("user".user_first_name, client.client_name, '') || ' ' || COALESCE("user".user_last_name, client.client_name, '') as uname,
+seluser.user_first_name as fname, seluser.user_last_name,
+'Supervisor Instructions:' as name,
+supervisor_inst as value
+FROM $P!{active_db}.problemsolver
+INNER JOIN $P!{active_db}.client ON client.client_id = problemsolver.client_id
+LEFT JOIN control_db."user" ON problemsolver.user_id = "user".user_id
+LEFT JOIN $P!{active_db}.client_to_user_contact ON client_to_user_contact.client_id = client.client_id
+LEFT JOIN control_db."user" as seluser ON seluser.user_id = client_to_user_contact.user_id
+WHERE ps_id = $P!{ps_id} AND supervisor_inst IS NOT NULL AND supervisor_inst != ''
+UNION
+SELECT
+client.client_name,
+5 as myorder,
+client.client_phone, client.client_phone2, client.client_fax,
+ps_date,
+COALESCE("user".user_first_name, client.client_name, '') || ' ' || COALESCE("user".user_last_name, client.client_name, '') as uname,
+seluser.user_first_name as fname, seluser.user_last_name,
+'DM Instructions:' as name,
+dm_inst as value
+FROM $P!{active_db}.problemsolver
+INNER JOIN $P!{active_db}.client ON client.client_id = problemsolver.client_id
+LEFT JOIN control_db."user" ON problemsolver.user_id = "user".user_id
+LEFT JOIN $P!{active_db}.client_to_user_contact ON client_to_user_contact.client_id = client.client_id
+LEFT JOIN control_db."user" as seluser ON seluser.user_id = client_to_user_contact.user_id
+WHERE ps_id = $P!{ps_id} AND dm_inst IS NOT NULL AND dm_inst != ''
+UNION
+SELECT
+client.client_name,
+6 as myorder,
+client.client_phone, client.client_phone2, client.client_fax,
+ps_date,
+COALESCE("user".user_first_name, client.client_name, '') || ' ' || COALESCE("user".user_last_name, client.client_name, '') as uname,
+seluser.user_first_name as fname, seluser.user_last_name,
+'HR Instructions:' as name,
+hr_inst as value
+FROM $P!{active_db}.problemsolver
+INNER JOIN $P!{active_db}.client ON client.client_id = problemsolver.client_id
+LEFT JOIN control_db."user" ON problemsolver.user_id = "user".user_id
+LEFT JOIN $P!{active_db}.client_to_user_contact ON client_to_user_contact.client_id = client.client_id
+LEFT JOIN control_db."user" as seluser ON seluser.user_id = client_to_user_contact.user_id
+WHERE ps_id = $P!{ps_id} AND hr_inst IS NOT NULL AND hr_inst != ''
+UNION
+SELECT
+client.client_name,
+7 as myorder,
+client.client_phone, client.client_phone2, client.client_fax,
+ps_date,
+COALESCE("user".user_first_name, client.client_name, '') || ' ' || COALESCE("user".user_last_name, client.client_name, '') as uname,
+seluser.user_first_name as fname, seluser.user_last_name,
+'Post Commander Instructions:' as name,
+postcom_inst as value
+FROM $P!{active_db}.problemsolver
+INNER JOIN $P!{active_db}.client ON client.client_id = problemsolver.client_id
+LEFT JOIN control_db."user" ON problemsolver.user_id = "user".user_id
+LEFT JOIN $P!{active_db}.client_to_user_contact ON client_to_user_contact.client_id = client.client_id
+LEFT JOIN control_db."user" as seluser ON seluser.user_id = client_to_user_contact.user_id
+WHERE ps_id = $P!{ps_id} AND postcom_inst IS NOT NULL AND postcom_inst != ''
+UNION
+SELECT
+client.client_name,
+8 as myorder,
+client.client_phone, client.client_phone2, client.client_fax,
+ps_date,
+COALESCE("user".user_first_name, client.client_name, '') || ' ' || COALESCE("user".user_last_name, client.client_name, '') as uname,
+seluser.user_first_name as fname, seluser.user_last_name,
+'Officer Instructions:' as name,
+officer_inst as value
+FROM $P!{active_db}.problemsolver
+INNER JOIN $P!{active_db}.client ON client.client_id = problemsolver.client_id
+LEFT JOIN control_db."user" ON problemsolver.user_id = "user".user_id
+LEFT JOIN $P!{active_db}.client_to_user_contact ON client_to_user_contact.client_id = client.client_id
+LEFT JOIN control_db."user" as seluser ON seluser.user_id = client_to_user_contact.user_id
+WHERE ps_id = $P!{ps_id} AND officer_inst IS NOT NULL AND officer_inst != ''
+UNION
+SELECT
+client.client_name,
+9 as myorder,
+client.client_phone, client.client_phone2, client.client_fax,
+ps_date,
+COALESCE("user".user_first_name, client.client_name, '') || ' ' || COALESCE("user".user_last_name, client.client_name, '') as uname,
+seluser.user_first_name as fname, seluser.user_last_name,
+'Payroll Instructions:' as name,
+payroll_inst as value
+FROM $P!{active_db}.problemsolver
+INNER JOIN $P!{active_db}.client ON client.client_id = problemsolver.client_id
+LEFT JOIN control_db."user" ON problemsolver.user_id = "user".user_id
+LEFT JOIN $P!{active_db}.client_to_user_contact ON client_to_user_contact.client_id = client.client_id
+LEFT JOIN control_db."user" as seluser ON seluser.user_id = client_to_user_contact.user_id
+WHERE ps_id = $P!{ps_id} AND payroll_inst IS NOT NULL AND payroll_inst != ''
+UNION
+SELECT
+client.client_name,
+10 as myorder,
+client.client_phone, client.client_phone2, client.client_fax,
+ps_date,
+COALESCE("user".user_first_name, client.client_name, '') || ' ' || COALESCE("user".user_last_name, client.client_name, '') as uname,
+seluser.user_first_name as fname, seluser.user_last_name,
+'Dispatch Instructions:' as name,
+dispatch_inst as value
+FROM $P!{active_db}.problemsolver
+INNER JOIN $P!{active_db}.client ON client.client_id = problemsolver.client_id
+LEFT JOIN control_db."user" ON problemsolver.user_id = "user".user_id
+LEFT JOIN $P!{active_db}.client_to_user_contact ON client_to_user_contact.client_id = client.client_id
+LEFT JOIN control_db."user" as seluser ON seluser.user_id = client_to_user_contact.user_id
+WHERE ps_id = $P!{ps_id} AND dispatch_inst IS NOT NULL AND dispatch_inst != ''
+UNION
+SELECT
+client.client_name,
+11 as myorder,
+client.client_phone, client.client_phone2, client.client_fax,
+ps_date,
+COALESCE("user".user_first_name, client.client_name, '') || ' ' || COALESCE("user".user_last_name, client.client_name, '') as uname,
+seluser.user_first_name as fname, seluser.user_last_name,
+'Checkin Instructions:' as name,
+checkin_inst as value
+FROM $P!{active_db}.problemsolver
+INNER JOIN $P!{active_db}.client ON client.client_id = problemsolver.client_id
+LEFT JOIN control_db."user" ON problemsolver.user_id = "user".user_id
+LEFT JOIN $P!{active_db}.client_to_user_contact ON client_to_user_contact.client_id = client.client_id
+LEFT JOIN control_db."user" as seluser ON seluser.user_id = client_to_user_contact.user_id
+WHERE ps_id = $P!{ps_id} AND checkin_inst IS NOT NULL AND checkin_inst != ''
+ORDER BY myorder]]>
+	</queryString>
+	<field name="client_name" class="java.lang.String"/>
+	<field name="myorder" class="java.lang.Integer"/>
+	<field name="client_phone" class="java.lang.String"/>
+	<field name="client_phone2" class="java.lang.String"/>
+	<field name="client_fax" class="java.lang.String"/>
+	<field name="ps_date" class="java.sql.Timestamp"/>
+	<field name="uname" class="java.lang.String"/>
+	<field name="fname" class="java.lang.String"/>
+	<field name="user_last_name" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
+	<field name="value" class="java.lang.String"/>
+	<group name="Group1">
+		<groupExpression><![CDATA[(int)($V{REPORT_COUNT}/15)]]></groupExpression>
+		<groupHeader>
+			<band height="8" splitType="Stretch"/>
+		</groupHeader>
+		<groupFooter>
+			<band height="30" splitType="Stretch"/>
+		</groupFooter>
+	</group>
+	<group name="Group2">
+		<groupExpression><![CDATA[(int)($V{REPORT_COUNT}/5)]]></groupExpression>
+	</group>
+	<background>
+		<band height="822" splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="184" splitType="Stretch">
+			<staticText>
+				<reportElement style="Title" mode="Opaque" x="0" y="0" width="555" height="115"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="44" isBold="false" pdfFontName="Helvetica"/>
+				</textElement>
+				<text><![CDATA[Corporate Communicator]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="24" y="115" width="531" height="37" forecolor="#666666"/>
+				<textElement>
+					<font fontName="SansSerif" size="26"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{client_name}]]></textFieldExpression>
+			</textField>
+			<frame>
+				<reportElement mode="Opaque" x="24" y="164" width="526" height="20" backcolor="#344077"/>
+				<textField pattern="MM/dd/yyyy">
+					<reportElement x="370" y="0" width="88" height="18" forecolor="#FFFFFF"/>
+					<textElement>
+						<font fontName="SansSerif" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.util.Date"><![CDATA[$F{ps_date}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="100" y="0" width="208" height="20" forecolor="#FFFFFF"/>
+					<textElement>
+						<font fontName="SansSerif" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{uname}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="0" width="100" height="20" forecolor="#FFFFFF"/>
+					<textElement>
+						<font fontName="SansSerif" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Originator:]]></text>
+				</staticText>
+			</frame>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="58" splitType="Stretch">
+			<frame>
+				<reportElement x="147" y="33" width="408" height="15"/>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="Detail" x="-90" y="-7" width="498" height="15"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{value}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<line>
+				<reportElement positionType="FixRelativeToBottom" x="24" y="53" width="531" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement style="SubTitle" x="29" y="0" width="526" height="26" forecolor="#344077"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="46" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

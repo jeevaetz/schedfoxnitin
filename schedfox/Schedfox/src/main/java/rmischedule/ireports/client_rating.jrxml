@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report name" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="active_schema" class="java.lang.String">
+		<defaultValueExpression><![CDATA["champion_db"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="dm_ints" class="java.util.List"/>
+	<queryString>
+		<![CDATA[SELECT
+branch_name, client_name, dynamic_field_value as industry_type,
+(SELECT customer_rating FROM $P!{active_schema}.client_ratings WHERE client_ratings.client_id = client.client_id ORDER BY date_of_rating DESC LIMIT 1) as last_rating,
+(SELECT user_first_name || ' ' || user_last_name FROM $P!{active_schema}.client_ratings INNER JOIN control_db.user ON "user".user_id = client_ratings.user_id WHERE client_ratings.client_id = client.client_id ORDER BY date_of_rating DESC LIMIT 1) as last_user_rating,
+(SELECT date_of_rating FROM $P!{active_schema}.client_ratings WHERE client_ratings.client_id = client.client_id ORDER BY date_of_rating DESC LIMIT 1) as last_date_rating,
+(SELECT AVG(customer_rating) FROM $P!{active_schema}.client_ratings WHERE client_ratings.client_id = client.client_id) as avg_rating
+FROM $P!{active_schema}.client
+INNER JOIN control_db.branch ON branch.branch_id = client.branch_id
+LEFT JOIN $P!{active_schema}.dynamic_field_value ON dynamic_field_value.key_for_value = client.client_id AND dynamic_field_value.dynamic_field_def_id = 8
+LEFT JOIN
+(
+	SELECT client_ratings.* FROM
+	champion_db.client_ratings
+	INNER JOIN
+	(
+		SELECT MAX(client_rating_id) as id
+		FROM champion_db.client_ratings
+		GROUP BY client_id
+	) as last_rating ON last_rating.id = client_ratings.client_rating_id
+) as ratings ON ratings.client_id = client.client_id
+LEFT JOIN control_db.user ON "user".user_id = ratings.user_id
+WHERE
+client_is_deleted = 0
+AND ($X{IN, "user".user_id, dm_ints} OR $X{IN, -1, dm_ints})
+ORDER BY branch_name, (SELECT customer_rating FROM $P!{active_schema}.client_ratings WHERE client_ratings.client_id = client.client_id ORDER BY date_of_rating DESC LIMIT 1) DESC]]>
+	</queryString>
+	<field name="branch_name" class="java.lang.String"/>
+	<field name="client_name" class="java.lang.String"/>
+	<field name="industry_type" class="java.lang.String"/>
+	<field name="last_rating" class="java.lang.Integer"/>
+	<field name="last_user_rating" class="java.lang.String"/>
+	<field name="last_date_rating" class="java.sql.Timestamp"/>
+	<field name="avg_rating" class="java.math.BigDecimal"/>
+	<group name="branch">
+		<groupExpression><![CDATA[$F{branch_name}]]></groupExpression>
+		<groupHeader>
+			<band height="57" splitType="Stretch">
+				<staticText>
+					<reportElement x="0" y="37" width="148" height="20"/>
+					<textElement/>
+					<text><![CDATA[Company Name]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="148" y="37" width="100" height="20"/>
+					<textElement/>
+					<text><![CDATA[Industry Type]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="248" y="37" width="72" height="20"/>
+					<textElement/>
+					<text><![CDATA[Average Rating]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="320" y="37" width="72" height="20"/>
+					<textElement/>
+					<text><![CDATA[Last Rating]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="392" y="37" width="72" height="20"/>
+					<textElement/>
+					<text><![CDATA[Last Rating On]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="464" y="37" width="91" height="20"/>
+					<textElement/>
+					<text><![CDATA[Last Rating By]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="0" y="0" width="320" height="25"/>
+					<textElement>
+						<font size="18"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{branch_name}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="39" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="555" height="36"/>
+				<textElement textAlignment="Center">
+					<font size="26"/>
+				</textElement>
+				<text><![CDATA[Client Rating Report]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="11" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="148" height="11"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{client_name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="148" y="0" width="100" height="11"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{industry_type}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.00;-###0.00" isBlankWhenNull="true">
+				<reportElement x="248" y="0" width="72" height="11"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{avg_rating} == null ? "N/A" : new java.text.DecimalFormat("###0.00;-###0.00").format($F{avg_rating})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="320" y="0" width="72" height="11"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{last_rating} == null ? "N/A" : $F{last_rating}.toString()]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="392" y="0" width="72" height="11"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{last_date_rating}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="464" y="0" width="91" height="11"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{last_user_rating}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

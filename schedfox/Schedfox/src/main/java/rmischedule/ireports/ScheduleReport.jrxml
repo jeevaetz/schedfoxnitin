@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD JasperReport//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="ScheduleReport" pageWidth="612" pageHeight="792" columnWidth="612" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="schedule_header" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="schedule_address" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="schedule_city" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="schedule_state" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="schedule_zip" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="schedule_phone" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String">
+		<defaultValueExpression><![CDATA[".\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="show_phone" class="java.lang.Boolean" isForPrompting="false"/>
+	<parameter name="show_address" class="java.lang.Boolean" isForPrompting="false"/>
+	<field name="day1" class="rmischeduleserver.util.xprint.xPrintDay"/>
+	<field name="day2" class="rmischeduleserver.util.xprint.xPrintDay"/>
+	<field name="day3" class="rmischeduleserver.util.xprint.xPrintDay"/>
+	<field name="day4" class="rmischeduleserver.util.xprint.xPrintDay"/>
+	<field name="day5" class="rmischeduleserver.util.xprint.xPrintDay"/>
+	<field name="day6" class="rmischeduleserver.util.xprint.xPrintDay"/>
+	<field name="day7" class="rmischeduleserver.util.xprint.xPrintDay"/>
+	<field name="schedule" class="rmischeduleserver.util.xprint.xPrintIndividualData"/>
+	<field name="schedule_header" class="java.lang.String"/>
+	<field name="schedule_phone" class="java.lang.String"/>
+	<field name="schedule_address" class="java.lang.String"/>
+	<field name="schedule_city" class="java.lang.String"/>
+	<field name="schedule_state" class="java.lang.String"/>
+	<field name="schedule_zip" class="java.lang.String"/>
+	<field name="totalDays" class="rmischeduleserver.util.xprint.xPrintAllDays"/>
+	<field name="showDetail" class="java.lang.Boolean"/>
+	<variable name="day1total" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{day1}.getTotalHours()]]></variableExpression>
+		<initialValueExpression><![CDATA[new Double(0)]]></initialValueExpression>
+	</variable>
+	<variable name="day2total" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{day2}.getTotalHours()]]></variableExpression>
+		<initialValueExpression><![CDATA[new Double(0)]]></initialValueExpression>
+	</variable>
+	<variable name="day3total" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{day3}.getTotalHours()]]></variableExpression>
+		<initialValueExpression><![CDATA[new Double(0)]]></initialValueExpression>
+	</variable>
+	<variable name="day4total" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{day4}.getTotalHours()]]></variableExpression>
+		<initialValueExpression><![CDATA[new Double(0)]]></initialValueExpression>
+	</variable>
+	<variable name="day5total" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{day5}.getTotalHours()]]></variableExpression>
+		<initialValueExpression><![CDATA[new Double(0)]]></initialValueExpression>
+	</variable>
+	<variable name="day6total" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{day6}.getTotalHours()]]></variableExpression>
+		<initialValueExpression><![CDATA[new Double(0)]]></initialValueExpression>
+	</variable>
+	<variable name="day7total" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{day7}.getTotalHours()]]></variableExpression>
+		<initialValueExpression><![CDATA[new Double(0)]]></initialValueExpression>
+	</variable>
+	<group name="reportDetail">
+		<groupExpression><![CDATA[$F{schedule_header}]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band/>
+		</groupFooter>
+	</group>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band/>
+	</title>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<columnHeader>
+		<band height="33">
+			<textField pattern="MM/dd/yyyy" isBlankWhenNull="false" hyperlinkType="None">
+				<reportElement key="textField-8" x="454" y="17" width="52" height="16"/>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Center">
+					<font fontName="Verdana" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{day7}.getMyDate()]]></textFieldExpression>
+			</textField>
+			<textField pattern="EEE" isBlankWhenNull="false" hyperlinkType="None">
+				<reportElement key="textField-38" x="454" y="2" width="52" height="16"/>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{day7}.getMyDate()]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/dd/yyyy" isBlankWhenNull="false" hyperlinkType="None">
+				<reportElement key="textField-39" x="402" y="17" width="52" height="16"/>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Center">
+					<font fontName="Verdana" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{day6}.getMyDate()]]></textFieldExpression>
+			</textField>
+			<textField pattern="EEE" isBlankWhenNull="false" hyperlinkType="None">
+				<reportElement key="textField-40" x="402" y="2" width="52" height="16"/>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{day6}.getMyDate()]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/dd/yyyy" isBlankWhenNull="false" hyperlinkType="None">
+				<reportElement key="textField-41" x="350" y="17" width="52" height="16"/>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Center">
+					<font fontName="Verdana" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{day5}.getMyDate()]]></textFieldExpression>
+			</textField>
+			<textField pattern="EEE" isBlankWhenNull="false" hyperlinkType="None">
+				<reportElement key="textField-42" x="350" y="2" width="52" height="16"/>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{day5}.getMyDate()]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/dd/yyyy" isBlankWhenNull="false" hyperlinkType="None">
+				<reportElement key="textField-43" x="298" y="17" width="52" height="16"/>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Center">
+					<font fontName="Verdana" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{day4}.getMyDate()]]></textFieldExpression>
+			</textField>
+			<textField pattern="EEE" isBlankWhenNull="false" hyperlinkType="None">
+				<reportElement key="textField-44" x="298" y="2" width="52" height="16"/>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{day4}.getMyDate()]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/dd/yyyy" isBlankWhenNull="false" hyperlinkType="None">
+				<reportElement key="textField-45" x="246" y="17" width="52" height="16"/>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Center">
+					<font fontName="Verdana" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{day3}.getMyDate()]]></textFieldExpression>
+			</textField>
+			<textField pattern="EEE" isBlankWhenNull="false" hyperlinkType="None">
+				<reportElement key="textField-46" x="246" y="2" width="52" height="16"/>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{day3}.getMyDate()]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/dd/yyyy" isBlankWhenNull="false" hyperlinkType="None">
+				<reportElement key="textField-47" x="194" y="17" width="52" height="16"/>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Center">
+					<font fontName="Verdana" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{day2}.getMyDate()]]></textFieldExpression>
+			</textField>
+			<textField pattern="EEE" isBlankWhenNull="false" hyperlinkType="None">
+				<reportElement key="textField-48" x="194" y="2" width="52" height="16"/>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{day2}.getMyDate()]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/dd/yyyy" isBlankWhenNull="false" hyperlinkType="None">
+				<reportElement key="textField-49" x="142" y="17" width="52" height="16"/>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Center">
+					<font fontName="Verdana" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{day1}.getMyDate()]]></textFieldExpression>
+			</textField>
+			<textField pattern="EEE" isBlankWhenNull="false" hyperlinkType="None">
+				<reportElement key="textField-50" x="142" y="2" width="52" height="16"/>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{day1}.getMyDate()]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="51">
+			<subreport isUsingCache="false">
+				<reportElement key="subreport-1" mode="Opaque" x="1" y="0" width="593" height="51" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[new Double(
+	$F{day1}.getDayTotalHours().doubleValue() +
+	$F{day2}.getDayTotalHours().doubleValue() +
+	$F{day3}.getDayTotalHours().doubleValue() +
+	$F{day4}.getDayTotalHours().doubleValue() +
+	$F{day5}.getDayTotalHours().doubleValue() +
+	$F{day6}.getDayTotalHours().doubleValue() +
+	$F{day7}.getDayTotalHours().doubleValue()
+) > 0]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="SUBREPORT_DIR">
+					<subreportParameterExpression><![CDATA[$P{SUBREPORT_DIR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="schedule_state">
+					<subreportParameterExpression><![CDATA[$F{schedule_state}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="schedule_address">
+					<subreportParameterExpression><![CDATA[$F{schedule_address}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="schedule_city">
+					<subreportParameterExpression><![CDATA[$F{schedule_city}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="schedule_phone">
+					<subreportParameterExpression><![CDATA[$F{schedule_phone}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="schedule_zip">
+					<subreportParameterExpression><![CDATA[$F{schedule_zip}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="show_address">
+					<subreportParameterExpression><![CDATA[$P{show_address}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="show_phone">
+					<subreportParameterExpression><![CDATA[$P{show_phone}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="schedule_header">
+					<subreportParameterExpression><![CDATA[$F{schedule_header}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[$F{schedule}]]></dataSourceExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "IndividualSchedule.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band/>
+	</pageFooter>
+	<summary>
+		<band height="41">
+			<rectangle>
+				<reportElement key="rectangle-17" x="454" y="0" width="52" height="15"/>
+				<graphicElement/>
+			</rectangle>
+			<rectangle>
+				<reportElement key="rectangle-18" x="402" y="0" width="52" height="15"/>
+				<graphicElement/>
+			</rectangle>
+			<rectangle>
+				<reportElement key="rectangle-19" x="350" y="0" width="52" height="15"/>
+				<graphicElement/>
+			</rectangle>
+			<rectangle>
+				<reportElement key="rectangle-20" x="298" y="0" width="52" height="15"/>
+				<graphicElement/>
+			</rectangle>
+			<rectangle>
+				<reportElement key="rectangle-21" x="246" y="0" width="52" height="15"/>
+				<graphicElement/>
+			</rectangle>
+			<rectangle>
+				<reportElement key="rectangle-22" x="194" y="0" width="52" height="15"/>
+				<graphicElement/>
+			</rectangle>
+			<rectangle>
+				<reportElement key="rectangle-23" x="142" y="0" width="52" height="15"/>
+				<graphicElement/>
+			</rectangle>
+			<rectangle>
+				<reportElement key="rectangle-25" x="506" y="0" width="37" height="15" forecolor="#000000"/>
+				<graphicElement/>
+			</rectangle>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement key="textField-31" x="145" y="1" width="46" height="13" forecolor="#000000">
+					<printWhenExpression><![CDATA[$V{day1total}.doubleValue() > 0]]></printWhenExpression>
+				</reportElement>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$V{day1total}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement key="textField-32" mode="Opaque" x="197" y="1" width="47" height="13" forecolor="#000000">
+					<printWhenExpression><![CDATA[$V{day2total}.doubleValue() > 0]]></printWhenExpression>
+				</reportElement>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$V{day2total}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement key="textField-33" mode="Opaque" x="249" y="1" width="47" height="13" forecolor="#000000">
+					<printWhenExpression><![CDATA[$V{day3total}.doubleValue() > 0]]></printWhenExpression>
+				</reportElement>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$V{day3total}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement key="textField-34" mode="Opaque" x="301" y="1" width="47" height="13" forecolor="#000000">
+					<printWhenExpression><![CDATA[$V{day4total}.doubleValue() > 0]]></printWhenExpression>
+				</reportElement>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$V{day4total}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement key="textField-35" x="353" y="1" width="47" height="13" forecolor="#000000">
+					<printWhenExpression><![CDATA[$V{day5total}.doubleValue() > 0]]></printWhenExpression>
+				</reportElement>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$V{day5total}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement key="textField-36" x="405" y="1" width="47" height="13" forecolor="#000000">
+					<printWhenExpression><![CDATA[$V{day6total}.doubleValue() > 0]]></printWhenExpression>
+				</reportElement>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$V{day6total}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement key="textField-37" mode="Opaque" x="457" y="1" width="47" height="13" forecolor="#000000">
+					<printWhenExpression><![CDATA[$V{day7total}.doubleValue() > 0]]></printWhenExpression>
+				</reportElement>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$V{day7total}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="None">
+				<reportElement key="textField-51" x="507" y="1" width="34" height="13" forecolor="#000000">
+					<printWhenExpression><![CDATA[new Double(
+	$V{day1total}.doubleValue() +
+	$V{day2total}.doubleValue() +
+	$V{day3total}.doubleValue() +
+	$V{day4total}.doubleValue() +
+	$V{day5total}.doubleValue() +
+	$V{day6total}.doubleValue() +
+	$V{day7total}.doubleValue()
+).doubleValue() > 0]]></printWhenExpression>
+				</reportElement>
+				<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000" rightBorder="None" rightBorderColor="#000000"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[new Double(
+	$V{day1total}.doubleValue() +
+	$V{day2total}.doubleValue() +
+	$V{day3total}.doubleValue() +
+	$V{day4total}.doubleValue() +
+	$V{day5total}.doubleValue() +
+	$V{day6total}.doubleValue() +
+	$V{day7total}.doubleValue()
+)]]></textFieldExpression>
+			</textField>
+			<subreport isUsingCache="false">
+				<reportElement key="subreport-2" positionType="Float" x="1" y="16" width="588" height="17" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true">
+					<printWhenExpression><![CDATA[$F{showDetail}]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="SUBREPORT_DIR">
+					<subreportParameterExpression><![CDATA[$P{SUBREPORT_DIR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[$F{totalDays}]]></dataSourceExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "EmployeeScheduleDetail.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</summary>
+</jasperReport>

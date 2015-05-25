@@ -1,0 +1,193 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/*
+ * ProblemSolverPanel.java
+ *
+ * Created on Oct 25, 2010, 11:01:11 AM
+ */
+
+package rmischedule.corporate_comm;
+
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import rmischedule.schedule.Schedule_View_Panel;
+import schedfoxlib.model.Client;
+import schedfoxlib.model.Problemsolver;
+import schedfoxlib.model.User;
+
+
+/**
+ *
+ * @author user
+ */
+public class ProblemSolverPanel extends javax.swing.JPanel {
+
+    private SimpleDateFormat myFormat = new SimpleDateFormat("MM/dd/yyyy");
+
+    private static HashMap<Integer, Client> clientCache = new HashMap<Integer, Client>();
+
+    /** Creates new form ProblemSolverPanel */
+    public ProblemSolverPanel(Problemsolver problemSolver, User user,Schedule_View_Panel svp) {
+        initComponents();
+
+        this.dateLabel.setText(myFormat.format(problemSolver.getPsDate()));
+        this.userLabel.setText(user.getUserFullName());
+
+        SolutionPanel problem = null;
+
+        if (clientCache.get(problemSolver.getClientId()) == null) {
+            clientCache.put(problemSolver.getClientId(), 
+                    problemSolver.getClientObj(svp.getConnection().myCompany));
+        }
+
+        this.storeLabel.setText(clientCache.get(problemSolver.getClientId()).getClientName());
+
+        if (problemSolver.getProblem() != null && problemSolver.getProblem().length() > 5) {
+            problem = new SolutionPanel("Problem", problemSolver.getProblem());
+            this.add(problem);
+        }
+
+        if (problemSolver.getSolution() != null && problemSolver.getSolution().length() > 5) {
+            SolutionPanel solution = new SolutionPanel("Solution", problemSolver.getSolution());
+            this.add(solution);
+        }
+
+        boolean hasSolution = false;
+
+        if (problemSolver.getCheckinInst() != null && problemSolver.getCheckinInst().length() > 5) {
+            this.add(new SolutionPanel("Checkin Instructions", problemSolver.getCheckinInst()));
+            hasSolution = true;
+        }
+
+        if (problemSolver.getDispatchInst() != null && problemSolver.getDispatchInst().length() > 5) {
+            this.add(new SolutionPanel("Dispatch Instructions", problemSolver.getDispatchInst()));
+            hasSolution = true;
+        }
+
+        if (problemSolver.getDmInst() != null && problemSolver.getDmInst().length() > 5) {
+            this.add(new SolutionPanel("DM Instructions", problemSolver.getDmInst()));
+            hasSolution = true;
+        }
+
+        if (problemSolver.getHrInst() != null && problemSolver.getHrInst().length() > 5) {
+            this.add(new SolutionPanel("HR Instructions", problemSolver.getHrInst()));
+            hasSolution = true;
+        }
+
+        if (problemSolver.getOfficerInst() != null && problemSolver.getOfficerInst().length() > 5) {
+            this.add(new SolutionPanel("Officer Instructions", problemSolver.getOfficerInst()));
+            hasSolution = true;
+        }
+
+        if (problemSolver.getPayrollInst() != null && problemSolver.getPayrollInst().length() > 5) {
+            this.add(new SolutionPanel("Payroll Instructions", problemSolver.getPayrollInst()));
+            hasSolution = true;
+        }
+
+        if (problemSolver.getPostcomInst() != null && problemSolver.getPostcomInst().length() > 5) {
+            this.add(new SolutionPanel("Post Instructions", problemSolver.getPostcomInst()));
+            hasSolution = true;
+        }
+
+        if (problemSolver.getSchedulerInst() != null && problemSolver.getSchedulerInst().length() > 5) {
+            this.add(new SolutionPanel("Scheduler Instructions", problemSolver.getSchedulerInst()));
+            hasSolution = true;
+        }
+
+        if (problemSolver.getSupervisorInst() != null && problemSolver.getSupervisorInst().length() > 5) {
+            this.add(new SolutionPanel("Supervisor Instructions", problemSolver.getSupervisorInst()));
+            hasSolution = true;
+        }
+
+        if (!hasSolution && problem != null) {
+            problem.setFontColor(Color.red);
+        }
+
+
+        double newHeight = 20;
+        for (int c = 0; c < this.getComponentCount(); c++) {
+            if (this.getComponent(c) instanceof SolutionPanel) {
+                newHeight += ((SolutionPanel)this.getComponent(c)).setMySize().getHeight();
+            }
+        }
+        this.setPreferredSize(new Dimension((int)this.getPreferredSize().getWidth(), (int)newHeight));
+        this.setMaximumSize(new Dimension((int)this.getMaximumSize().getWidth(), (int)newHeight));
+        this.setMinimumSize(new Dimension((int)this.getMinimumSize().getWidth(), (int)newHeight));
+    }
+
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        rowOnePanel = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        dateLabel = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        userLabel = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        storeLabel = new javax.swing.JLabel();
+
+        setMaximumSize(new java.awt.Dimension(1000, 300));
+        setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.Y_AXIS));
+
+        rowOnePanel.setMaximumSize(new java.awt.Dimension(1000, 22));
+        rowOnePanel.setMinimumSize(new java.awt.Dimension(10, 22));
+        rowOnePanel.setPreferredSize(new java.awt.Dimension(100, 22));
+        rowOnePanel.setLayout(new javax.swing.BoxLayout(rowOnePanel, javax.swing.BoxLayout.LINE_AXIS));
+
+        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel1.setText("Date");
+        jLabel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 8));
+        rowOnePanel.add(jLabel1);
+
+        dateLabel.setMaximumSize(new java.awt.Dimension(70, 14));
+        dateLabel.setMinimumSize(new java.awt.Dimension(70, 14));
+        dateLabel.setPreferredSize(new java.awt.Dimension(70, 14));
+        rowOnePanel.add(dateLabel);
+
+        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel2.setText("By");
+        jLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 8));
+        rowOnePanel.add(jLabel2);
+
+        userLabel.setMaximumSize(new java.awt.Dimension(120, 14));
+        userLabel.setMinimumSize(new java.awt.Dimension(80, 14));
+        userLabel.setPreferredSize(new java.awt.Dimension(80, 14));
+        rowOnePanel.add(userLabel);
+
+        jLabel3.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel3.setText("Store");
+        jLabel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 8));
+        rowOnePanel.add(jLabel3);
+
+        storeLabel.setMaximumSize(new java.awt.Dimension(1000, 14));
+        storeLabel.setMinimumSize(new java.awt.Dimension(80, 14));
+        storeLabel.setPreferredSize(new java.awt.Dimension(80, 14));
+        rowOnePanel.add(storeLabel);
+
+        add(rowOnePanel);
+    }// </editor-fold>//GEN-END:initComponents
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel dateLabel;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JPanel rowOnePanel;
+    private javax.swing.JLabel storeLabel;
+    private javax.swing.JLabel userLabel;
+    // End of variables declaration//GEN-END:variables
+
+}

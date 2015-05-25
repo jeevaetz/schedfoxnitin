@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="EmployeeCheckReport" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["C:\\work\\champion\\Notifications\\src\\com\\schedfox\\notifications\\ireports\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="employee_payment_id" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[263746]]></defaultValueExpression>
+	</parameter>
+	<parameter name="SUBREPORT_DATASOURCE" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<queryString>
+		<![CDATA[SELECT * FROM
+champion_db.employee_payments
+INNER JOIN champion_db.employee ON employee.employee_id = employee_payments.employee_id
+WHERE
+employee_payments_id = $P{employee_payment_id}]]>
+	</queryString>
+	<field name="employee_payments_id" class="java.lang.Integer"/>
+	<field name="employee_id" class="java.lang.Integer"/>
+	<field name="date_of_trans" class="java.sql.Date"/>
+	<field name="trans_type" class="java.lang.Integer"/>
+	<field name="net_pay" class="java.math.BigDecimal"/>
+	<field name="gross_pay" class="java.math.BigDecimal"/>
+	<field name="check_num" class="java.lang.String"/>
+	<field name="branch_id" class="java.lang.Integer"/>
+	<field name="employee_first_name" class="java.lang.String"/>
+	<field name="employee_last_name" class="java.lang.String"/>
+	<field name="employee_middle_initial" class="java.lang.String"/>
+	<field name="employee_ssn" class="java.lang.String"/>
+	<field name="employee_address" class="java.lang.String"/>
+	<field name="employee_address2" class="java.lang.String"/>
+	<field name="employee_city" class="java.lang.String"/>
+	<field name="employee_state" class="java.lang.String"/>
+	<field name="employee_zip" class="java.lang.String"/>
+	<field name="employee_phone" class="java.lang.String"/>
+	<field name="employee_phone2" class="java.lang.String"/>
+	<field name="employee_cell" class="java.lang.String"/>
+	<field name="employee_pager" class="java.lang.String"/>
+	<field name="employee_email" class="java.lang.String"/>
+	<field name="employee_hire_date" class="java.sql.Date"/>
+	<field name="employee_term_date" class="java.sql.Date"/>
+	<field name="employee_is_deleted" class="java.lang.Integer"/>
+	<field name="employee_last_updated" class="java.sql.Timestamp"/>
+	<field name="employee_type" class="java.lang.Integer"/>
+	<field name="web_login" class="java.lang.String"/>
+	<field name="web_pw" class="java.lang.String"/>
+	<field name="employee_birthdate" class="java.sql.Date"/>
+	<field name="employee_login" class="java.lang.String"/>
+	<field name="employee_password" class="java.lang.String"/>
+	<field name="is_login_available" class="java.lang.Boolean"/>
+	<field name="employee_type_id" class="java.lang.Integer"/>
+	<field name="employee_email2" class="java.lang.String"/>
+	<field name="email_messaging" class="java.lang.String"/>
+	<field name="sms_messaging" class="java.lang.Boolean"/>
+	<field name="employee_workhrs_pweek" class="java.lang.Integer"/>
+	<field name="accrued_vacation" class="java.lang.Integer"/>
+	<field name="mark_invisible" class="java.lang.Boolean"/>
+	<field name="gender" class="java.lang.Integer"/>
+	<field name="race" class="java.lang.Integer"/>
+	<field name="phone_contact" class="java.lang.Integer"/>
+	<field name="phone2_contact" class="java.lang.Integer"/>
+	<field name="cell_contact" class="java.lang.Integer"/>
+	<field name="email_contact" class="java.lang.Integer"/>
+	<field name="alt_email_contact" class="java.lang.Integer"/>
+	<field name="employee_deleted_on" class="java.sql.Timestamp"/>
+	<field name="full_time" class="java.lang.Boolean"/>
+	<field name="employee_scan_id" class="java.lang.String"/>
+	<field name="employee_emergency" class="java.lang.String"/>
+	<field name="is_sub_contractor" class="java.lang.Boolean"/>
+	<variable name="total_deductions" class="java.math.BigDecimal" resetType="None" calculation="System">
+		<variableExpression><![CDATA[new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="total_tax" class="java.math.BigDecimal" resetType="None" calculation="System">
+		<variableExpression><![CDATA[new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="total_hours" class="java.math.BigDecimal" resetType="None" calculation="System">
+		<variableExpression><![CDATA[new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<variable name="total_pay" class="java.math.BigDecimal" resetType="None" calculation="System">
+		<variableExpression><![CDATA[new BigDecimal(0)]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="194" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="35" width="552" height="46"/>
+				<textElement>
+					<font size="24"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{employee_first_name} + " " + $F{employee_last_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="562" y="35" width="240" height="46"/>
+				<textElement textAlignment="Right">
+					<font size="24"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{check_num}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/dd/yyyy">
+				<reportElement x="562" y="0" width="240" height="35"/>
+				<textElement textAlignment="Right">
+					<font size="24"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{date_of_trans}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="0" width="552" height="35"/>
+				<textElement>
+					<font size="24"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Champion National Security"]]></textFieldExpression>
+			</textField>
+			<subreport runToBottom="false">
+				<reportElement x="291" y="110" width="260" height="84"/>
+				<subreportParameter name="employee_payment_id">
+					<subreportParameterExpression><![CDATA[$P{employee_payment_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<returnValue subreportVariable="total_deductions" toVariable="total_deductions"/>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "EmployeeCheckDeductions.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport runToBottom="false">
+				<reportElement x="58" y="110" width="220" height="84"/>
+				<subreportParameter name="employee_payment_id">
+					<subreportParameterExpression><![CDATA[$P{employee_payment_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<returnValue subreportVariable="total_hours" toVariable="total_hours"/>
+				<returnValue subreportVariable="total_pay" toVariable="total_pay"/>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "EmployeeCheckHours.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport runToBottom="false">
+				<reportElement x="563" y="110" width="240" height="84"/>
+				<subreportParameter name="employee_payment_id">
+					<subreportParameterExpression><![CDATA[$P{employee_payment_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<returnValue subreportVariable="total_tax" toVariable="total_tax"/>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "EmployeeCheckTaxes.jasper"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement x="58" y="90" width="220" height="20"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Hours Worked]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="291" y="90" width="258" height="20"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Hours Worked]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="565" y="90" width="237" height="20"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Hours Worked]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="250" splitType="Stretch">
+			<textField pattern="¤ #,##0.00">
+				<reportElement positionType="Float" x="723" y="104" width="80" height="20"/>
+				<textElement textAlignment="Right">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_deductions} == null ? new BigDecimal(0) : $V{total_deductions}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="563" y="104" width="160" height="20"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Deductions]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="563" y="128" width="160" height="20"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tax]]></text>
+			</staticText>
+			<textField pattern="¤ #,##0.00">
+				<reportElement positionType="Float" x="723" y="128" width="80" height="20"/>
+				<textElement textAlignment="Right">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_tax}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="563" y="80" width="158" height="20"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Gross Pay]]></text>
+			</staticText>
+			<textField pattern="¤ #,##0.00">
+				<reportElement positionType="Float" x="723" y="80" width="78" height="20"/>
+				<textElement textAlignment="Right">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_pay}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="563" y="153" width="160" height="20"/>
+				<box topPadding="3">
+					<topPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Net Pay]]></text>
+			</staticText>
+			<textField pattern="¤ #,##0.00">
+				<reportElement positionType="Float" x="723" y="153" width="80" height="20"/>
+				<box topPadding="3">
+					<topPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[new BigDecimal($V{total_pay}.doubleValue() - $V{total_tax}.doubleValue() - ($V{total_deductions} == null ? new BigDecimal(0) : $V{total_deductions}).doubleValue())]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement positionType="Float" x="-1" y="80" width="550" height="166"/>
+				<subreportParameter name="SUBREPORT_DIR">
+					<subreportParameterExpression><![CDATA[$P{SUBREPORT_DIR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[$P{SUBREPORT_DATASOURCE}]]></dataSourceExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "EmployeeScheduleDetail.jasper"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement positionType="Float" x="58" y="0" width="90" height="20"/>
+				<box topPadding="3">
+					<topPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="12" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Total Hours]]></text>
+			</staticText>
+			<textField pattern="¤ #,##0.00">
+				<reportElement positionType="Float" x="218" y="0" width="60" height="20"/>
+				<box topPadding="3">
+					<topPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_pay}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0">
+				<reportElement positionType="Float" x="148" y="0" width="70" height="20"/>
+				<box topPadding="3">
+					<topPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_hours}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00">
+				<reportElement positionType="Float" x="469" y="0" width="80" height="20"/>
+				<box topPadding="3">
+					<topPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_deductions} == null ? new BigDecimal(0) : $V{total_deductions}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="291" y="0" width="178" height="20"/>
+				<box topPadding="3">
+					<topPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="12" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Total Deductions]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="563" y="0" width="160" height="20"/>
+				<box topPadding="3">
+					<topPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="12" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Total Tax]]></text>
+			</staticText>
+			<textField pattern="¤ #,##0.00">
+				<reportElement positionType="Float" x="723" y="0" width="80" height="20"/>
+				<box topPadding="3">
+					<topPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_tax}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>
